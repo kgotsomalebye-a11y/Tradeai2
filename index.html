@@ -340,9 +340,8 @@ function askAI(type) {
   }
   alert('Ask me:\n\n"' + p[type] + '"')
 }
-
 async function fetchLivePrices() {
-  if (TWELVE_DATA_KEY === 'cc07f95e31b34fc8a4d42e62f9af97c6') {
+  if (!TWELVE_DATA_KEY || TWELVE_DATA_KEY === 'YOUR_TWELVE_DATA_KEY_HERE') {
     setStatus('Demo data — add your Twelve Data key in the code to go live', false)
     return
   }
@@ -351,9 +350,7 @@ async function fetchLivePrices() {
     setStatus('Fetching live prices...', false)
     const res = await fetch(`https://api.twelvedata.com/quote?symbol=${encodeURIComponent(symbols)}&apikey=${TWELVE_DATA_KEY}`)
     const data = await res.json()
-
     const lookup = data.symbol ? {[data.symbol]: data} : data
-
     let updatedAny = false
     MARKETS.forEach(m => {
       const d = lookup[m.tdSym]
@@ -367,7 +364,6 @@ async function fetchLivePrices() {
         updatedAny = true
       }
     })
-
     if (updatedAny) {
       lastFetchFailed = false
       liveDataOk = true
@@ -383,9 +379,8 @@ async function fetchLivePrices() {
     console.log('Price fetch error:', e)
   }
 }
-
 async function fetchLiveNews() {
-  if (NEWS_API_KEY === '018fe5459e2546af8a8018fd3c55e61b') return
+  if (!NEWS_API_KEY || NEWS_API_KEY === 'YOUR_NEWS_API_KEY_HERE') return
   try {
     const query = currentMarket.sym === 'XAU/USD' ? 'gold price' :
                   currentMarket.sym === 'WTI/USD' ? 'oil price' :
