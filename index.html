@@ -200,6 +200,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
 
 <script>
 const MARKETS = [
+  {sym:"BTC/USD", apiType:"crypto", apiSym:"bitcoin", name:"Bitcoin Spot", price:67420.00, open:66800.00, high:68100.00, low:66500.00, chg:620.00, chgPct:0.92},
   {sym:"XAU/USD", apiType:"metal", apiSym:"pax-gold", name:"Gold Spot", price:2348.10, open:2335.00, high:2355.40, low:2331.20, chg:13.10, chgPct:0.56},
   {sym:"WTI/USD", apiType:"oil", apiSym:"pax-gold", name:"Crude Oil WTI", price:79.24, open:78.80, high:79.80, low:78.40, chg:0.44, chgPct:0.55},
   {sym:"USD/ZAR", apiType:"forex", apiSym:"ZAR", name:"US Dollar / Rand", price:18.45, open:18.45, high:18.55, low:18.35, chg:0.00, chgPct:0.00},
@@ -217,6 +218,7 @@ const TECH_BY_TF = {
 };
 
 const NEWS_FALLBACK = {
+  "BTC/USD":[{h:"Aggressive derivative liquidations cascading past micro daily opens",s:"bull"},{h:"Whale wallet clusters stacking blocks at psychological support zones",s:"bull"}],
   "XAU/USD":[{h:"Institutional block orders step in protecting Gold near structural value fields",s:"bull"},{h:"Aggressive buy sweeps clearing outer premium offer rings",s:"bull"}],
   "WTI/USD":[{h:"Imbalance signals distribution patterns across localized macro ticks",s:"bear"},{h:"Footprint matrix flags concentrated resistance points over structural session high",s:"bear"}],
   "USD/ZAR":[{h:"Tape velocities slow near critical mathematical price inflection frames",s:"neut"},{h:"Time & Sales parameters print continuous low-tier localized balance patterns",s:"neut"}],
@@ -231,11 +233,12 @@ async function pullDirectTickerData() {
     const statusLine = document.getElementById('status-line');
     if(statusLine) statusLine.textContent = `Syncing live exchange feed for ${currentMarket.sym}...`;
     
-    if (currentMarket.apiType === "metal" || currentMarket.apiType === "oil") {
-      const res = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=pax-gold&vs_currencies=usd`);
+    if (currentMarket.apiType === "crypto" || currentMarket.apiType === "metal" || currentMarket.apiType === "oil") {
+      const targetId = currentMarket.apiType === "crypto" ? "bitcoin" : "pax-gold";
+      const res = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${targetId}&vs_currencies=usd`);
       const json = await res.json();
-      if(json && json['pax-gold']) {
-        let liveVal = json['pax-gold'].usd;
+      if(json && json[targetId]) {
+        let liveVal = json[targetId].usd;
         if (currentMarket.apiType === "oil") liveVal = (liveVal / 29.5) + 0.15; 
         currentMarket.price = liveVal;
       }
@@ -308,7 +311,7 @@ function fmt(price) {
 function updatePriceHero() {
   const m = currentMarket;
   const isUp = m.chg >= 0;
-  const prefix = (m.sym === 'XAU/USD' || m.sym === 'WTI/USD') ? '$' : '';
+  const prefix = (m.sym === 'XAU/USD' || m.sym === 'WTI/USD' || m.sym === 'BTC/USD') ? '$' : '';
   const range = (m.high - m.low) || 1;
   
   const symEl = document.getElementById('price-symbol');
@@ -443,7 +446,6 @@ function startDashboard() {
   }
 }
 
-// Global Instant-On Initialization Hook
 if (document.readyState === 'loading') {
   window.addEventListener('DOMContentLoaded', startDashboard);
 } else {
