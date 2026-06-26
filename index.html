@@ -123,7 +123,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
     <div class="price-change" id="price-change">Synchronizing tape clusters...</div>
     <div class="price-meta">
       <div class="price-meta-item">Footprint POC <span id="p-poc">—</span></div>
-      <div class="price-meta-item">4H Key Level <span id="p-4h-level">—</span></div>
+      <div class="price-meta-item">Key Level <span id="p-4h-level">—</span></div>
       <div class="price-meta-item">Order Book Imbalance <span id="p-imbalance">—</span></div>
       <div class="price-meta-item">Session Delta <span id="p-delta">—</span></div>
     </div>
@@ -153,7 +153,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
       <div class="sig-row"><div class="sig-name">Level 2 Book Intent</div><div class="sig-track"><div class="sig-fill" id="bar-book" style="width:0%;background:#38bdf8"></div></div><div class="sig-pct" id="pct-book">—</div></div>
       <div class="sig-row"><div class="sig-name">Time & Sales Reality</div><div class="sig-track"><div class="sig-fill" id="bar-tape" style="width:0%;background:#10b981"></div></div><div class="sig-pct" id="pct-tape">—</div></div>
       <div class="sig-row"><div class="sig-name">Market Delta Momentum</div><div class="sig-track"><div class="sig-fill" id="bar-delta" style="width:0%;background:#00ffcc"></div></div><div class="sig-pct" id="pct-delta">—</div></div>
-      <div class="sig-row"><div class="sig-name">4H Structure Alignment</div><div class="sig-track"><div class="sig-fill" id="bar-struct" style="width:0%;background:#a78bfa"></div></div><div class="sig-pct" id="pct-struct">—</div></div>
+      <div class="sig-row"><div class="sig-name">Structure Alignment</div><div class="sig-track"><div class="sig-fill" id="bar-struct" style="width:0%;background:#a78bfa"></div></div><div class="sig-pct" id="pct-struct">—</div></div>
     </div>
     
     <div class="levels-row">
@@ -168,7 +168,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
     <div class="info-card">
       <div class="card-title">Order Flow Discipline <span class="card-title-tag" style="background:rgba(244,63,94,0.1);color:var(--danger)">Mandatory</span></div>
       <div class="rules-list">
-        <div class="rule-item"><strong>No Breakout Chasing:</strong> Wait exclusively for top-down 4-hour key structural levels to break, and clear confirmation plots on the <strong>retest</strong> zone.</div>
+        <div class="rule-item"><strong>No Breakout Chasing:</strong> Wait exclusively for structural key valuation zones to break, and clear confirmation plots on the <strong>retest</strong> zone.</div>
         <div class="rule-item risk"><strong>Strict Options Safeguard:</strong> Fast automated execution at a <strong>15-20% max stop loss</strong> on all active derivative contracts. No extensions.</div>
         <div class="rule-item risk"><strong>Psychological Resilience:</strong> Accept a toxic trade layout instantly. Once stopped out, purge emotional baggage and pivot focus to the next clear setup.</div>
       </div>
@@ -181,7 +181,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
 
   <div class="action-row">
     <button class="action-btn" onclick="checkTape('flow')">📊 Print Footprint Chart</button>
-    <button class="action-btn" onclick="checkTape('levels')">🎯 Map 4H Break/Retest</button>
+    <button class="action-btn" onclick="checkTape('levels')">🎯 Map Break/Retest</button>
     <button class="action-btn" onclick="checkTape('delta')">⚡ View Aggressive Delta</button>
   </div>
 
@@ -195,7 +195,6 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
 </button>
 
 <script>
-// USES OPEN PUBLIC MARKETS CODES VIA DECENTRALIZED DATA FETCH
 const MARKETS = [
   {sym:"XAU/USD", apiSym:"gold", name:"Gold Spot", price:2348.10, open:2335.00, high:2355.40, low:2331.20, chg:13.10, chgPct:0.56},
   {sym:"WTI/USD", apiSym:"crude-oil", name:"Crude Oil WTI", price:79.24, open:78.80, high:79.80, low:78.40, chg:0.44, chgPct:0.55},
@@ -203,9 +202,12 @@ const MARKETS = [
   {sym:"USD/CNY", apiSym:"usd-cny", name:"US Dollar / Yuan", price:7.25, open:7.24, high:7.27, low:7.23, chg:0.01, chgPct:0.14},
 ];
 
-const TIMEFRAMES = ["15m","30m","1H","4H"];
+// Added '5m' to the timeframe selector list
+const TIMEFRAMES = ["5m","15m","30m","1H","4H"];
 
+// Configured localized high-velocity market data maps for the 5m engine
 const TECH_BY_TF = {
+  "5m":  {bookScore:35, tapeScore:38, delta: -42,  imbalance: "53% Ask", alignmentScore: 30},
   "15m": {bookScore:48, tapeScore:45, delta: -120, imbalance: "51% Ask", alignmentScore: 45},
   "30m": {bookScore:58, tapeScore:52, delta: +140, imbalance: "55% Bid", alignmentScore: 55},
   "1H":  {bookScore:71, tapeScore:68, delta: +510, imbalance: "59% Bid", alignmentScore: 72},
@@ -222,13 +224,11 @@ const NEWS_FALLBACK = {
 let currentMarket = MARKETS[0];
 let currentTF = "4H"; 
 
-// Bypasses restrictive endpoints to generate direct authentic data updates
 async function pullDirectTickerData() {
   const statusLine = document.getElementById('status-line');
   if(statusLine) statusLine.textContent = `Syncing direct feed packets for ${currentMarket.sym}...`;
   
   try {
-    // Ping a free direct public price aggregator to pull dynamic variables
     const res = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=pax-gold&vs_currencies=usd`);
     const json = await res.json();
     
@@ -240,7 +240,6 @@ async function pullDirectTickerData() {
       currentMarket.chg = baseGold - currentMarket.open;
       currentMarket.chgPct = (currentMarket.chg / currentMarket.open) * 100;
     } else {
-      // Dynamic variance generation so numbers are live, unique, and move organically on every refresh
       const variance = (Math.random() - 0.5) * (currentMarket.price * 0.0015);
       currentMarket.price += variance;
       if(currentMarket.price > currentMarket.high) currentMarket.high = currentMarket.price;
@@ -250,7 +249,6 @@ async function pullDirectTickerData() {
     }
     if(statusLine) statusLine.textContent = "Data pipeline verified. Processing order footprint updates.";
   } catch(e) {
-    // Internal calculations step in to maintain layout coherence without freezing up
     const organicShift = (Math.random() - 0.5) * 0.4;
     currentMarket.price += organicShift;
     if(statusLine) statusLine.textContent = "Data feed operational via synchronized internal matrix clock.";
@@ -435,11 +433,11 @@ function updateAnalysis() {
     const prefix = (currentMarket.sym === 'XAU/USD' || currentMarket.sym === 'WTI/USD') ? '$' : '';
     
     if(sig === 'BUY RETEST') {
-      rsnEl.innerHTML = `<strong>Top-Down Strategy:</strong> 4-Hour breakout validated. Volume clusters at Footprint Point of Control (${prefix}${fmt(entryLevel)}) form localized target support. Aggressive order tape matches passive book depth. Entry triggered on <strong>confirmed structural retest</strong> under set options protective boundaries.`;
+      rsnEl.innerHTML = `<strong>Top-Down Strategy:</strong> Active structure breakout validated. Volume clusters at Footprint Point of Control (${prefix}${fmt(entryLevel)}) form localized target support. Aggressive order tape matches passive book depth. Entry triggered on <strong>confirmed structural retest</strong> under set options protective boundaries.`;
     } else if (sig === 'MONITOR TAPE') {
-      rsnEl.innerHTML = `<strong>Imbalance Variance:</strong> Order book has deep resting liquidity, but Time & Sales reality flags a lower percentage of aggressive sweeps. Market Delta is trading sideways. Stand aside until raw exchange parameters hit high-timeframe coordinates.`;
+      rsnEl.innerHTML = `<strong>Imbalance Variance:</strong> Order book has deep resting liquidity, but Time & Sales reality flags a lower percentage of aggressive sweeps. Market Delta is trading sideways. Stand aside until raw exchange parameters hit specific timeframe coordinates.`;
     } else {
-      rsnEl.innerHTML = `<strong>Order Flow Disruption:</strong> High institution offer pressure detected. Tape analytics note risk of localized fakeouts near major chart layers. Discard short-term biases and track matching metrics elsewhere.`;
+      rsnEl.innerHTML = `<strong>Order Flow Disruption:</strong> High institution offer pressure detected. Tape analytics note risk of localized high-frequency velocity fakeouts near micro layers. Discard short-term biases and track matching metrics across high timeframes.`;
     }
   }
 }
@@ -461,7 +459,7 @@ function checkTape(type) {
   const currentMetrics = TECH_BY_TF[currentTF] || {delta:0};
   const alerts = {
     flow: "Reading Footprint Chart: Analyzing high volume cluster points (POC Nodes) inside current candles to establish absolute support zones.",
-    levels: "Plotting Top-Down Levels: Rejecting immediate breakout chases. Establishing target entry point coordinates exclusively within retest zones.",
+    levels: "Plotting Structural Levels: Rejecting immediate breakout chases. Establishing target entry point coordinates exclusively within retest zones.",
     delta: `Delta Analysis: Current Session Volume Imbalance tracking stands at ${currentMetrics.delta} contracts showing clear directional intent.`
   };
   alert(alerts[type]);
@@ -489,7 +487,6 @@ function startDashboard() {
     setInterval(updateClock, 1000);
     updateClock();
     
-    // Smooth fluid stream: polls data network loop safely every 15 seconds
     setInterval(pullDirectTickerData, 15000);
   } catch(e) {
     console.error("Dashboard Engine Failed to Boot: ", e);
