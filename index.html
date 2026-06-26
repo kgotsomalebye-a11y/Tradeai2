@@ -7,7 +7,6 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="TradeAI-Pro">
-<link rel="manifest" href="manifest.json">
 <title>TradeAI Pro - Order Flow Edition</title>
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -25,7 +24,6 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
 .logo{font-family:var(--mono);font-size:16px;color:var(--accent);letter-spacing:0.12em;font-weight:700}
 .top-right{display:flex;align-items:center;gap:12px}
 .live-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);animation:pulse 2s infinite}
-.live-dot.stale{background:var(--warning);animation:none}
 @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.5;transform:scale(1.3)}}
 .clock{font-family:var(--mono);font-size:12px;color:var(--muted)}
 .status-line{font-size:11px;color:var(--muted);padding:6px 20px;background:var(--bg2);border-bottom:1px solid var(--border);font-family:var(--mono)}
@@ -46,7 +44,6 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
 .price-meta-item{font-size:12px;color:var(--muted)}
 .price-meta-item span{color:var(--text);font-family:var(--mono);font-size:13px}
 
-/* FOOTPRINT CHART TAB STYLING */
 .footprint-container {background:var(--bg3);border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:16px;}
 .footprint-header {font-size:11px;color:var(--muted);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;}
 .footprint-grid {display:flex;gap:16px;overflow-x:auto;padding-bottom:10px;}
@@ -100,139 +97,4 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
 .badge.bear{background:rgba(244,63,94,0.15);color:#f43f5e}
 .badge.neut{background:rgba(255,255,255,0.08);color:var(--muted)}
 .action-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:24px}
-@media(max-width:500px){.action-row{grid-template-columns:1fr}}
-.action-btn{padding:12px;border-radius:12px;border:1px solid var(--border2);background:transparent;color:var(--text);font-size:13px;cursor:pointer;text-align:center;font-family:var(--sans)}
-.action-btn:hover{background:rgba(255,255,255,0.05);border-color:var(--accent);color:var(--accent)}
-.refresh-btn{position:fixed;bottom:24px;right:20px;width:52px;height:52px;border-radius:50%;background:var(--accent);border:none;color:#000;font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(0,255,204,0.3);z-index:200}
-@keyframes spin{to{transform:rotate(360deg)}}
-.refresh-btn.spinning svg{animation:spin 0.8s linear infinite}
-</style>
-</head>
-<body>
-
-<div class="topbar">
-  <div class="logo">TRADE<span style="color:#fff">AI</span> <span style="font-size:10px;color:var(--muted);vertical-align:super">FLOW</span></div>
-  <div class="top-right">
-    <div class="live-dot" id="live-dot"></div>
-    <div class="clock" id="clock">--:--:--</div>
-  </div>
-</div>
-<div class="status-line" id="status-line">Analyzing Tape and Footprint Volumes...</div>
-
-<div class="market-bar" id="market-bar"></div>
-<div class="tf-bar" id="tf-bar"></div>
-
-<div class="main">
-
-  <div class="price-hero">
-    <div class="price-symbol" id="price-symbol">—</div>
-    <div class="price-value" id="price-value">—</div>
-    <div class="price-change" id="price-change">Loading Tape...</div>
-    <div class="price-meta">
-      <div class="price-meta-item">Footprint POC <span id="p-poc">—</span></div>
-      <div class="price-meta-item">4H Key Level <span id="p-4h-level">—</span></div>
-      <div class="price-meta-item">Order Book Imbalance <span id="p-imbalance">—</span></div>
-      <div class="price-meta-item">Session Delta <span id="p-delta">—</span></div>
-    </div>
-  </div>
-
-  <div class="footprint-container">
-    <div class="footprint-header">
-      <div>Volume Footprint Matrix (Bid Vol | Price | Ask Vol)</div>
-      <div class="card-title-tag" id="fp-tf-tag">Timeframe: 4H</div>
-    </div>
-    <div class="footprint-grid" id="footprint-candles-container">
-      </div>
-  </div>
-
-  <div class="rec-card">
-    <div class="rec-header">
-      <div>
-        <div class="rec-label">Order Flow Confirmation</div>
-        <div class="rec-signal hold" id="rec-signal">—</div>
-      </div>
-      <div class="confidence-wrap">
-        <div class="confidence-label">Intent vs Reality</div>
-        <div class="confidence-num" id="conf-num">—%</div>
-      </div>
-    </div>
-    
-    <div class="signal-bars">
-      <div class="sig-row"><div class="sig-name">Level 2 Book Intent</div><div class="sig-track"><div class="sig-fill" id="bar-book" style="width:0%;background:#38bdf8"></div></div><div class="sig-pct" id="pct-book">—</div></div>
-      <div class="sig-row"><div class="sig-name">Time & Sales Reality</div><div class="sig-track"><div class="sig-fill" id="bar-tape" style="width:0%;background:#10b981"></div></div><div class="sig-pct" id="pct-tape">—</div></div>
-      <div class="sig-row"><div class="sig-name">Market Delta Momentum</div><div class="sig-track"><div class="sig-fill" id="bar-delta" style="width:0%;background:#00ffcc"></div></div><div class="sig-pct" id="pct-delta">—</div></div>
-      <div class="sig-row"><div class="sig-name">4H Structure Alignment</div><div class="sig-track"><div class="sig-fill" id="bar-struct" style="width:0%;background:#a78bfa"></div></div><div class="sig-pct" id="pct-struct">—</div></div>
-    </div>
-    
-    <div class="levels-row">
-      <div class="level-box"><div class="level-lbl">Planned Entry (Retest)</div><div class="level-val entry" id="lv-entry">—</div></div>
-      <div class="level-box"><div class="level-lbl">Stop Loss (Options Auto)</div><div class="level-val sl" id="lv-sl">—</div></div>
-      <div class="level-box"><div class="level-lbl">Take Profit (2:1 Ratio)</div><div class="level-val tp" id="lv-tp">—</div></div>
-    </div>
-    <div class="reasoning" id="reasoning">Awaiting dynamic tape calculation...</div>
-  </div>
-
-  <div class="card-grid">
-    <div class="info-card">
-      <div class="card-title">Order Flow Discipline <span class="card-title-tag" style="background:rgba(244,63,94,0.1);color:var(--danger)">Mandatory</span></div>
-      <div class="rules-list">
-        <div class="rule-item"><strong>No Breakout Chasing:</strong> Wait exclusively for top-down 4-hour key structural levels to break, and clear confirmation plots on the <strong>retest</strong> zone.</div>
-        <div class="rule-item risk"><strong>Strict Options Safeguard:</strong> Fast automated execution at a <strong>15-20% max stop loss</strong> on all active derivative contracts. No extensions.</div>
-        <div class="rule-item risk"><strong>Psychological Resilience:</strong> Accept a toxic trade layout instantly. Once stopped out, purge emotional baggage and pivot focus to the next clear setup.</div>
-      </div>
-    </div>
-    <div class="info-card">
-      <div class="card-title">Tape Sentiment Index <span class="card-title-tag">Live Feed</span></div>
-      <div id="news-feed"></div>
-    </div>
-  </div>
-
-  <div class="action-row">
-    <button class="action-btn" onclick="checkTape('flow')">📊 Print Footprint Chart</button>
-    <button class="action-btn" onclick="checkTape('levels')">🎯 Map 4H Break/Retest</button>
-    <button class="action-btn" onclick="checkTape('delta')">⚡ View Aggressive Delta</button>
-  </div>
-
-</div>
-
-<button class="refresh-btn" id="refresh-btn" onclick="refresh(true)">
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M23 4v6h-6"/><path d="M1 20v-6h6"/>
-    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
-  </svg>
-</button>
-
-<script>
-const TWELVE_DATA_KEY = 'cc07f95e31b34fc8a4d42e62f9af97c6';
-const NEWS_API_KEY = '018fe5459e2546af8a8018fd3c55e61b';
-
-const MARKETS = [
-  {sym:"XAU/USD", tdSym:"XAU/USD", name:"Gold Spot", price:2335.50, open:2325.00, high:2342.10, low:2320.40, chg:10.50, chgPct:0.45},
-  {sym:"WTI/USD", tdSym:"WTI/USD", name:"Crude Oil WTI", price:78.45, open:78.77, high:79.12, low:78.10, chg:-0.32, chgPct:-0.41},
-  {sym:"USD/ZAR", tdSym:"USD/ZAR", name:"US Dollar / Rand", price:18.45, open:18.32, high:18.58, low:18.28, chg:0.13, chgPct:0.71},
-  {sym:"USD/CNY", tdSym:"USD/CNY", name:"US Dollar / Yuan", price:7.24, open:7.22, high:7.26, low:7.21, chg:0.02, chgPct:0.28},
-];
-
-const TIMEFRAMES = ["15m","30m","1H","4H"];
-
-const TECH_BY_TF = {
-  "15m": {bookScore:45, tapeScore:42, delta: -180, imbalance: "52% Ask", alignmentScore: 40, status: "Noise / Consolidating"},
-  "30m": {bookScore:55, tapeScore:48, delta: +85,  imbalance: "54% Bid", alignmentScore: 50, status: "Building Liquidity"},
-  "1H":  {bookScore:65, tapeScore:72, delta: +420, imbalance: "61% Bid", alignmentScore: 70, status: "Approaching Retest Zone"},
-  "4H":  {bookScore:82, tapeScore:85, delta: +1150,imbalance: "68% Bid", alignmentScore: 90, status: "Key Structure Break Confirmed"},
-};
-
-const NEWS_FALLBACK = {
-  "XAU/USD":[{h:"Large limit blocks step in on Level 2 supporting Gold near lower value area",s:"bull"},{h:"Aggressive market sweeps clear out resting sellers over the hour",s:"bull"}],
-  "WTI/USD":[{h:"Imbalance flips heavily to offer-side as block selling triggers",s:"bear"},{h:"Footprint POC forms at structural highs, signaling aggressive distribution",s:"bear"}],
-  "USD/ZAR":[{h:"Tape goes flat on major nodes with minimal aggressive participation",s:"neut"},{h:"Time & Sales reveals balanced auction framework",s:"neut"}],
-  "USD/CNY":[{h:"Iceberg buy orders observed absorbing localized sell volume",s:"bull"},{h:"Delta remains net-neutral inside range parameters",s:"neut"}],
-};
-
-let currentMarket = MARKETS[0];
-let currentTF = "4H"; 
-
-function setStatus(msg, isError) {
-  const el = document.getElementById('status-line');
-  el.textContent = msg;
-  el.
+@media(max-width:50
