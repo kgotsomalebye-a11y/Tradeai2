@@ -6,30 +6,29 @@
 <meta name="theme-color" content="#0a0f1e">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="TradeAI">
+<meta name="apple-mobile-web-app-title" content="TradeAI-Pro">
 <link rel="manifest" href="manifest.json">
-<title>TradeAI Order Flow Dashboard</title>
+<title>TradeAI Pro - Order Flow Edition</title>
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#0a0f1e;--bg2:#111827;--bg3:#1a2235;
-  --border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.15);
-  --text:#f0f4ff;--muted:#8892a4;
-  --accent:#00d4aa;--accent2:#3b82f6;
-  --danger:#f43f5e;--warning:#f59e0b;--success:#10b981;
+  --bg:#070a13;--bg2:#0f1526;--bg3:#172037;
+  --border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.12);
+  --text:#f0f4ff;--muted:#7c8ba1;
+  --accent:#00ffcc;--accent2:#38bdf8;
+  --danger:#f43f5e;--warning:#fbbf24;--success:#10b981;
   --mono:'Space Mono',monospace;--sans:'DM Sans',sans-serif;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--sans);overflow-x:hidden}
 .topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;background:var(--bg2);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100}
-.logo{font-family:var(--mono);font-size:16px;color:var(--accent);letter-spacing:0.1em}
+.logo{font-family:var(--mono);font-size:16px;color:var(--accent);letter-spacing:0.12em;font-weight:700}
 .top-right{display:flex;align-items:center;gap:12px}
 .live-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);animation:pulse 2s infinite}
 .live-dot.stale{background:var(--warning);animation:none}
 @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.5;transform:scale(1.3)}}
 .clock{font-family:var(--mono);font-size:12px;color:var(--muted)}
 .status-line{font-size:11px;color:var(--muted);padding:6px 20px;background:var(--bg2);border-bottom:1px solid var(--border);font-family:var(--mono)}
-.status-line.error{color:var(--warning)}
 .market-bar{padding:10px 20px;background:var(--bg2);border-bottom:1px solid var(--border);overflow-x:auto;display:flex;gap:8px}
 .mkt-btn{padding:6px 16px;border-radius:20px;border:1px solid var(--border2);background:transparent;color:var(--muted);font-size:13px;cursor:pointer;white-space:nowrap;transition:all 0.2s}
 .mkt-btn.active{background:var(--accent);border-color:var(--accent);color:#000;font-weight:600}
@@ -46,6 +45,19 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
 .price-meta{display:flex;gap:20px;margin-top:12px;flex-wrap:wrap}
 .price-meta-item{font-size:12px;color:var(--muted)}
 .price-meta-item span{color:var(--text);font-family:var(--mono);font-size:13px}
+
+/* FOOTPRINT CHART TAB STYLING */
+.footprint-container {background:var(--bg3);border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:16px;}
+.footprint-header {font-size:11px;color:var(--muted);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;}
+.footprint-grid {display:flex;gap:16px;overflow-x:auto;padding-bottom:10px;}
+.footprint-candle {flex:1;min-width:180px;background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:8px;padding:10px;}
+.candle-meta {font-family:var(--mono);font-size:11px;text-align:center;padding-bottom:8px;border-bottom:1px solid var(--border);margin-bottom:8px;display:flex;justify-content:space-between;}
+.footprint-row {display:grid;grid-template-columns:1fr 2fr 1fr;gap:4px;font-family:var(--mono);font-size:11px;padding:3px 4px;margin:2px 0;border-radius:4px;}
+.footprint-row.poc {background:rgba(0,255,204,0.12);border:1px solid rgba(0,255,204,0.3);color:var(--accent);font-weight:700;}
+.fp-bid {color:var(--danger);text-align:left;}
+.fp-price {color:var(--muted);text-align:center;font-weight:600;}
+.fp-ask {color:var(--success);text-align:right;}
+
 .rec-card{background:var(--bg3);border-radius:16px;padding:20px;margin-bottom:16px;border:1px solid var(--border)}
 .rec-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
 .rec-label{font-size:11px;color:var(--muted);letter-spacing:0.12em;text-transform:uppercase}
@@ -59,59 +71,53 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
 .signal-bars{display:grid;gap:10px;margin-bottom:16px}
 .sig-row{display:flex;align-items:center;gap:10px}
 .sig-name{font-size:12px;color:var(--muted);min-width:160px}
-.sig-track{flex:1;height:6px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden}
+.sig-track{flex:1;height:6px;background:rgba(255,255,255,0.04);border-radius:3px;overflow:hidden}
 .sig-fill{height:100%;border-radius:3px;transition:width 0.8s ease}
-.sig-pct{font-family:var(--mono);font-size:12px;color:var(--text);min-width:36px;text-align:right}
+.sig-pct{font-family:var(--mono);font-size:12px;color:var(--text);min-width:42px;text-align:right}
 .levels-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:16px}
-.level-box{background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px;padding:10px;text-align:center}
+.level-box{background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:10px;padding:10px;text-align:center}
 .level-lbl{font-size:11px;color:var(--muted);margin-bottom:4px}
 .level-val{font-family:var(--mono);font-size:14px;font-weight:700}
 .level-val.entry{color:var(--accent2)}
 .level-val.sl{color:var(--danger)}
 .level-val.tp{color:var(--success)}
-.reasoning{background:rgba(0,212,170,0.04);border:1px solid rgba(0,212,170,0.15);border-radius:12px;padding:14px;font-size:13px;color:var(--muted);line-height:1.7;margin-top:14px}
+.reasoning{background:rgba(0,255,204,0.03);border:1px solid rgba(0,255,204,0.12);border-radius:12px;padding:14px;font-size:13px;color:var(--muted);line-height:1.7;margin-top:14px}
 .reasoning strong{color:var(--accent)}
 .card-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
-@media(max-width:600px){.card-grid{grid-template-columns:1fr}}
+@media(max-width:768px){.card-grid{grid-template-columns:1fr}}
 .info-card{background:var(--bg3);border:1px solid var(--border);border-radius:16px;padding:16px}
 .card-title{font-size:11px;color:var(--muted);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between}
-.card-title-tag{font-size:9px;padding:2px 6px;border-radius:8px;background:rgba(255,255,255,0.06);color:var(--muted);text-transform:none;letter-spacing:0}
-.card-title-tag.live{background:rgba(16,185,129,0.15);color:#10b981}
+.card-title-tag{font-size:9px;padding:2px 6px;border-radius:8px;background:rgba(255,255,255,0.06);color:var(--muted)}
+.rules-list{display:flex;flex-direction:column;gap:10px}
+.rule-item{font-size:12px;line-height:1.5;padding:8px;border-radius:8px;background:rgba(255,255,255,0.01);border-left:3px solid var(--accent2)}
+.rule-item.risk{border-left-color:var(--danger)}
+.rule-item strong{color:var(--text)}
 .news-item{padding:8px 0;border-bottom:1px solid var(--border)}
-.news-item:last-child{border-bottom:none}
-.news-headline{font-size:13px;color:var(--text);margin-bottom:4px;line-height:1.4}
-.news-meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.news-headline{font-size:13px;line-height:1.4;margin-bottom:4px}
+.news-meta{display:flex;gap:8px;align-items:center}
 .badge{font-size:10px;padding:2px 8px;border-radius:10px;font-weight:600}
 .badge.bull{background:rgba(16,185,129,0.15);color:#10b981}
 .badge.bear{background:rgba(244,63,94,0.15);color:#f43f5e}
 .badge.neut{background:rgba(255,255,255,0.08);color:var(--muted)}
-.badge.high-imp{background:rgba(244,63,94,0.15);color:#f43f5e}
-.badge.med-imp{background:rgba(245,158,11,0.15);color:#f59e0b}
-.news-age{font-size:11px;color:var(--muted)}
-.cal-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
-.cal-item:last-child{border-bottom:none}
-.cal-date{font-family:var(--mono);font-size:11px;color:var(--muted);min-width:44px}
-.cal-event{font-size:13px;color:var(--text);flex:1}
 .action-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:24px}
 @media(max-width:500px){.action-row{grid-template-columns:1fr}}
-.action-btn{padding:12px;border-radius:12px;border:1px solid var(--border2);background:transparent;color:var(--text);font-size:13px;cursor:pointer;text-align:center}
+.action-btn{padding:12px;border-radius:12px;border:1px solid var(--border2);background:transparent;color:var(--text);font-size:13px;cursor:pointer;text-align:center;font-family:var(--sans)}
 .action-btn:hover{background:rgba(255,255,255,0.05);border-color:var(--accent);color:var(--accent)}
-.refresh-btn{position:fixed;bottom:24px;right:20px;width:52px;height:52px;border-radius:50%;background:var(--accent);border:none;color:#000;font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(0,212,170,0.4);z-index:200}
-.refresh-btn.spinning svg{animation:spin 0.8s linear infinite}
+.refresh-btn{position:fixed;bottom:24px;right:20px;width:52px;height:52px;border-radius:50%;background:var(--accent);border:none;color:#000;font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(0,255,204,0.3);z-index:200}
 @keyframes spin{to{transform:rotate(360deg)}}
-.spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,0.2);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;vertical-align:middle;margin-right:6px}
+.refresh-btn.spinning svg{animation:spin 0.8s linear infinite}
 </style>
 </head>
 <body>
 
 <div class="topbar">
-  <div class="logo">TRADE<span style="color:#fff">AI</span> // ORDER FLOW</div>
+  <div class="logo">TRADE<span style="color:#fff">AI</span> <span style="font-size:10px;color:var(--muted);vertical-align:super">FLOW</span></div>
   <div class="top-right">
     <div class="live-dot" id="live-dot"></div>
     <div class="clock" id="clock">--:--:--</div>
   </div>
 </div>
-<div class="status-line" id="status-line">Initializing order book matrices...</div>
+<div class="status-line" id="status-line">Analyzing Tape and Footprint Volumes...</div>
 
 <div class="market-bar" id="market-bar"></div>
 <div class="tf-bar" id="tf-bar"></div>
@@ -121,19 +127,28 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
   <div class="price-hero">
     <div class="price-symbol" id="price-symbol">—</div>
     <div class="price-value" id="price-value">—</div>
-    <div class="price-change" id="price-change">Loading...</div>
+    <div class="price-change" id="price-change">Loading Tape...</div>
     <div class="price-meta">
-      <div class="price-meta-item">4H Key Level <span id="p-open">—</span></div>
-      <div class="price-meta-item">Volume POC <span id="p-high">—</span></div>
-      <div class="price-meta-item">Session Delta <span id="p-low">—</span></div>
-      <div class="price-meta-item">Setup State <span id="p-atr">—</span></div>
+      <div class="price-meta-item">Footprint POC <span id="p-poc">—</span></div>
+      <div class="price-meta-item">4H Key Level <span id="p-4h-level">—</span></div>
+      <div class="price-meta-item">Order Book Imbalance <span id="p-imbalance">—</span></div>
+      <div class="price-meta-item">Session Delta <span id="p-delta">—</span></div>
     </div>
+  </div>
+
+  <div class="footprint-container">
+    <div class="footprint-header">
+      <div>Volume Footprint Matrix (Bid Vol | Price | Ask Vol)</div>
+      <div class="card-title-tag" id="fp-tf-tag">Timeframe: 4H</div>
+    </div>
+    <div class="footprint-grid" id="footprint-candles-container">
+      </div>
   </div>
 
   <div class="rec-card">
     <div class="rec-header">
       <div>
-        <div class="rec-label">Execution Signal (Break & Retest Check)</div>
+        <div class="rec-label">Order Flow Confirmation</div>
         <div class="rec-signal hold" id="rec-signal">—</div>
       </div>
       <div class="confidence-wrap">
@@ -141,35 +156,41 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
         <div class="confidence-num" id="conf-num">—%</div>
       </div>
     </div>
+    
     <div class="signal-bars">
-      <div class="sig-row"><div class="sig-name">Order Book (L2 Imbalance)</div><div class="sig-track"><div class="sig-fill" id="bar-ema" style="width:0%;background:#10b981"></div></div><div class="sig-pct" id="pct-ema">—</div></div>
-      <div class="sig-row"><div class="sig-name">Market Delta Momentum</div><div class="sig-track"><div class="sig-fill" id="bar-macd" style="width:0%;background:#3b82f6"></div></div><div class="sig-pct" id="pct-macd">—</div></div>
-      <div class="sig-row"><div class="sig-name">Footprint POC Support</div><div class="sig-track"><div class="sig-fill" id="bar-news" style="width:0%;background:#00d4aa"></div></div><div class="sig-pct" id="pct-news">—</div></div>
-      <div class="sig-row"><div class="sig-name" style="color:var(--text);font-weight:500">Order Flow Confluence</div><div class="sig-track"><div class="sig-fill" id="bar-comb" style="width:0%;background:#a78bfa"></div></div><div class="sig-pct" id="pct-comb" style="color:var(--accent)">—</div></div>
+      <div class="sig-row"><div class="sig-name">Level 2 Book Intent</div><div class="sig-track"><div class="sig-fill" id="bar-book" style="width:0%;background:#38bdf8"></div></div><div class="sig-pct" id="pct-book">—</div></div>
+      <div class="sig-row"><div class="sig-name">Time & Sales Reality</div><div class="sig-track"><div class="sig-fill" id="bar-tape" style="width:0%;background:#10b981"></div></div><div class="sig-pct" id="pct-tape">—</div></div>
+      <div class="sig-row"><div class="sig-name">Market Delta Momentum</div><div class="sig-track"><div class="sig-fill" id="bar-delta" style="width:0%;background:#00ffcc"></div></div><div class="sig-pct" id="pct-delta">—</div></div>
+      <div class="sig-row"><div class="sig-name">4H Structure Alignment</div><div class="sig-track"><div class="sig-fill" id="bar-struct" style="width:0%;background:#a78bfa"></div></div><div class="sig-pct" id="pct-struct">—</div></div>
     </div>
+    
     <div class="levels-row">
-      <div class="level-box"><div class="level-lbl">Limit Entry (Retest)</div><div class="level-val entry" id="lv-entry">—</div></div>
-      <div class="level-box"><div class="level-lbl">Option SL (Max 15-20%)</div><div class="level-val sl" id="lv-sl">—</div></div>
-      <div class="level-box"><div class="level-lbl">Target (Min 2:1 R:R)</div><div class="level-val tp" id="lv-tp">—</div></div>
+      <div class="level-box"><div class="level-lbl">Planned Entry (Retest)</div><div class="level-val entry" id="lv-entry">—</div></div>
+      <div class="level-box"><div class="level-lbl">Stop Loss (Options Auto)</div><div class="level-val sl" id="lv-sl">—</div></div>
+      <div class="level-box"><div class="level-lbl">Take Profit (2:1 Ratio)</div><div class="level-val tp" id="lv-tp">—</div></div>
     </div>
-    <div class="reasoning" id="reasoning"><span class="spinner"></span> Parsing tape logic and order book variables...</div>
+    <div class="reasoning" id="reasoning">Awaiting dynamic tape calculation...</div>
   </div>
 
   <div class="card-grid">
     <div class="info-card">
-      <div class="card-title">Discipline Protocols <span class="card-title-tag" style="background:var(--danger);color:#fff">Risk Core</span></div>
-      <div id="cal-feed"></div>
+      <div class="card-title">Order Flow Discipline <span class="card-title-tag" style="background:rgba(244,63,94,0.1);color:var(--danger)">Mandatory</span></div>
+      <div class="rules-list">
+        <div class="rule-item"><strong>No Breakout Chasing:</strong> Wait exclusively for top-down 4-hour key structural levels to break, and clear confirmation plots on the <strong>retest</strong> zone.</div>
+        <div class="rule-item risk"><strong>Strict Options Safeguard:</strong> Fast automated execution at a <strong>15-20% max stop loss</strong> on all active derivative contracts. No extensions.</div>
+        <div class="rule-item risk"><strong>Psychological Resilience:</strong> Accept a toxic trade layout instantly. Once stopped out, purge emotional baggage and pivot focus to the next clear setup.</div>
+      </div>
     </div>
     <div class="info-card">
-      <div class="card-title">Order Book Flow Updates <span class="card-title-tag" id="news-source-tag">Time & Sales</span></div>
+      <div class="card-title">Tape Sentiment Index <span class="card-title-tag">Live Feed</span></div>
       <div id="news-feed"></div>
     </div>
   </div>
 
   <div class="action-row">
-    <button class="action-btn" onclick="askAI('full')">🔍 Audit Intent vs Reality</button>
-    <button class="action-btn" onclick="askAI('news')">📊 Footprint Chart Deep Dive</button>
-    <button class="action-btn" onclick="askAI('macro')">🌍 4H Structural Outlook</button>
+    <button class="action-btn" onclick="checkTape('flow')">📊 Print Footprint Chart</button>
+    <button class="action-btn" onclick="checkTape('levels')">🎯 Map 4H Break/Retest</button>
+    <button class="action-btn" onclick="checkTape('delta')">⚡ View Aggressive Delta</button>
   </div>
 
 </div>
@@ -186,243 +207,32 @@ const TWELVE_DATA_KEY = 'cc07f95e31b34fc8a4d42e62f9af97c6';
 const NEWS_API_KEY = '018fe5459e2546af8a8018fd3c55e61b';
 
 const MARKETS = [
-  {sym:"XAU/USD", tdSym:"XAU/USD", name:"Gold Spot", cat:"commodity", price:2335.50, keyLevel4H:2320.00, pocZone:2331.10, delta:"+4,820", state:"Testing 4H Broken Resistance"},
-  {sym:"WTI/USD", tdSym:"WTI/USD", name:"Crude Oil WTI", cat:"commodity", price:78.45, keyLevel4H:79.50, pocZone:78.80, delta:"-1,240", state:"Chasing Mid-Range (No Trade)"},
-  {sym:"USD/ZAR", tdSym:"USD/ZAR", name:"US Dollar / Rand", cat:"forex", price:18.45, keyLevel4H:18.20, pocZone:18.38, delta:"+12,150", state:"Retesting Broken POC Area"},
-  {sym:"USD/CNY", tdSym:"USD/CNY", name:"US Dollar / Yuan", cat:"forex", price:7.24, keyLevel4H:7.20, pocZone:7.23, delta:"+450", state:"Compressing at Key Level"},
-]
+  {sym:"XAU/USD", tdSym:"XAU/USD", name:"Gold Spot", price:2335.50, open:2325.00, high:2342.10, low:2320.40, chg:10.50, chgPct:0.45},
+  {sym:"WTI/USD", tdSym:"WTI/USD", name:"Crude Oil WTI", price:78.45, open:78.77, high:79.12, low:78.10, chg:-0.32, chgPct:-0.41},
+  {sym:"USD/ZAR", tdSym:"USD/ZAR", name:"US Dollar / Rand", price:18.45, open:18.32, high:18.58, low:18.28, chg:0.13, chgPct:0.71},
+  {sym:"USD/CNY", tdSym:"USD/CNY", name:"US Dollar / Yuan", price:7.24, open:7.22, high:7.26, low:7.21, chg:0.02, chgPct:0.28},
+];
 
-const TIMEFRAMES = ["15m Execution","1H Flow Check","4H Structural Level"]
-let currentMarket = MARKETS[0]
-let currentTF = "4H Structural Level"
-let liveDataOk = false
-let lastFetchFailed = false
+const TIMEFRAMES = ["15m","30m","1H","4H"];
 
-const BULLISH_WORDS = ['absorption','bid','bids','buying delta','break and retest','poc support','iceberg absorb','above poc']
-const BEARISH_WORDS = ['ask','asks','selling delta','breakdown','poc resistance','failed retest','below poc']
+const TECH_BY_TF = {
+  "15m": {bookScore:45, tapeScore:42, delta: -180, imbalance: "52% Ask", alignmentScore: 40, status: "Noise / Consolidating"},
+  "30m": {bookScore:55, tapeScore:48, delta: +85,  imbalance: "54% Bid", alignmentScore: 50, status: "Building Liquidity"},
+  "1H":  {bookScore:65, tapeScore:72, delta: +420, imbalance: "61% Bid", alignmentScore: 70, status: "Approaching Retest Zone"},
+  "4H":  {bookScore:82, tapeScore:85, delta: +1150,imbalance: "68% Bid", alignmentScore: 90, status: "Key Structure Break Confirmed"},
+};
 
-function scoreHeadline(title) {
-  const t = title.toLowerCase()
-  let bull = 0, bear = 0
-  BULLISH_WORDS.forEach(w => { if (t.includes(w)) bull++ })
-  BEARISH_WORDS.forEach(w => { if (t.includes(w)) bear++ })
-  if (bull > bear) return 'bull'
-  if (bear > bull) return 'bear'
-  return 'neut'
-}
+const NEWS_FALLBACK = {
+  "XAU/USD":[{h:"Large limit blocks step in on Level 2 supporting Gold near lower value area",s:"bull"},{h:"Aggressive market sweeps clear out resting sellers over the hour",s:"bull"}],
+  "WTI/USD":[{h:"Imbalance flips heavily to offer-side as block selling triggers",s:"bear"},{h:"Footprint POC forms at structural highs, signaling aggressive distribution",s:"bear"}],
+  "USD/ZAR":[{h:"Tape goes flat on major nodes with minimal aggressive participation",s:"neut"},{h:"Time & Sales reveals balanced auction framework",s:"neut"}],
+  "USD/CNY":[{h:"Iceberg buy orders observed absorbing localized sell volume",s:"bull"},{h:"Delta remains net-neutral inside range parameters",s:"neut"}],
+};
 
-let liveNewsItems = null
-let liveNewsScore = null
-
-const FLOW_FALLBACK = {
-  "XAU/USD":[{h:"Large passive buy orders absorbing aggressive selling on Time & Sales",s:"bull",a:"0m ago"},{h:"Delta turns strongly positive as buyers hold the 4H POC line",s:"bull",a:"4m ago"}],
-  "WTI/USD":[{h:"Asks stacking up heavily on Level 2 book above spot",s:"bear",a:"2m ago"},{h:"Aggressive market orders selling into the bid stack",s:"bear",a:"8m ago"}],
-  "USD/ZAR":[{h:"Order book balance balanced; minimal aggressive transaction intent",s:"neut",a:"1m ago"}],
-  "USD/CNY":[{h:"Subtle block size icebergs noticed near local high boundary",s:"bear",a:"12m ago"}],
-}
-
-const DISCIPLINE_DATA = [
-  {e:"Strict Max Options Stop Loss Set at 15-20%",d:"RULE 1",i:"high"},
-  {e:"Accept and Disconnect from Loss Instantly",d:"RULE 2",i:"high"},
-  {e:"Minimum Profit Target Set to 2:1 Risk/Reward Ratio",d:"RULE 3",i:"high"},
-  {e:"Do Not Chase Breakouts. Only Buy/Sell Valid Retests",d:"RULE 4",i:"med"},
-]
-
-function currentNewsItems() {
-  return liveNewsItems || FLOW_FALLBACK[currentMarket.sym] || []
-}
-
-function currentNewsScore() {
-  if (liveNewsScore !== null) return liveNewsScore
-  const items = FLOW_FALLBACK[currentMarket.sym] || []
-  const bullCount = items.filter(n => n.s === 'bull').length
-  return items.length ? Math.round((bullCount / items.length) * 100) : 50
-}
+let currentMarket = MARKETS[0];
+let currentTF = "4H"; 
 
 function setStatus(msg, isError) {
-  const el = document.getElementById('status-line')
-  el.textContent = msg
-  el.className = 'status-line' + (isError ? ' error' : '')
-  document.getElementById('live-dot').className = 'live-dot' + (isError ? ' stale' : '')
-}
-
-function buildMarketBar() {
-  document.getElementById('market-bar').innerHTML = MARKETS.map(m =>
-    `<button class="mkt-btn ${m.sym===currentMarket.sym?'active':''}" onclick="selectMarket('${m.sym}')">${m.sym}</button>`
-  ).join('')
-}
-function buildTFBar() {
-  document.getElementById('tf-bar').innerHTML = TIMEFRAMES.map(tf =>
-    `<button class="tf-btn ${tf===currentTF?'active':''}" onclick="selectTF('${tf}')">${tf}</button>`
-  ).join('')
-}
-function selectMarket(sym) {
-  currentMarket = MARKETS.find(m => m.sym === sym)
-  liveNewsItems = null
-  liveNewsScore = null
-  document.getElementById('news-source-tag').textContent = 'Time & Sales'
-  buildMarketBar()
-  updatePriceHero()
-  updateAnalysis()
-  updateNews()
-}
-function selectTF(tf) {
-  currentTF = tf
-  buildTFBar()
-  updateAnalysis()
-}
-
-function fmt(price) {
-  if (price > 100) return price.toFixed(2)
-  return price.toFixed(4)
-}
-
-function updatePriceHero() {
-  const m = currentMarket
-  const prefix = (m.sym === 'XAU/USD' || m.sym === 'WTI/USD') ? '$' : ''
-  document.getElementById('price-symbol').textContent = m.sym + ' · ' + m.name
-  document.getElementById('price-value').textContent = prefix + fmt(m.price)
-  
-  const ce = document.getElementById('price-change')
-  const sign = m.delta.startsWith('+') ? '▲' : '▼'
-  ce.textContent = `${sign} Market Delta Intent: ${m.delta} contracts executed today`
-  ce.className = 'price-change ' + (m.delta.startsWith('+')?'up':'down')
-  
-  document.getElementById('p-open').textContent = prefix + fmt(m.keyLevel4H)
-  document.getElementById('p-high').textContent = prefix + fmt(m.pocZone)
-  document.getElementById('p-low').textContent = m.delta
-  document.getElementById('p-atr').textContent = m.state
-}
-
-function setBar(id, pct, delay) {
-  setTimeout(() => { const e = document.getElementById(id); if (e) e.style.width = pct + '%' }, delay)
-}
-
-function updateAnalysis() {
-  const isUp = currentMarket.delta.startsWith('+')
-  const bookImbalance = isUp ? 78 : 34
-  const deltaScore = isUp ? 84 : 26
-  const pocSupport = isUp ? 72 : 40
-  const combined = Math.round(bookImbalance*0.35 + deltaScore*0.35 + pocSupport*0.30)
-
-  setBar('bar-ema', bookImbalance, 80)
-  setBar('bar-macd', deltaScore, 160)
-  setBar('bar-news', pocSupport, 240)
-  setBar('bar-comb', combined, 320)
-  document.getElementById('pct-ema').textContent = bookImbalance + '%'
-  document.getElementById('pct-macd').textContent = deltaScore + '%'
-  document.getElementById('pct-news').textContent = pocSupport + '%'
-  document.getElementById('pct-comb').textContent = combined + '%'
-  document.getElementById('conf-num').textContent = combined + '%'
-
-  const recEl = document.getElementById('rec-signal')
-  if (combined >= 65 && isUp) { recEl.textContent='VALID RETEST (BUY)'; recEl.className='rec-signal buy' }
-  else if (combined <= 45 && !isUp) { recEl.textContent='EXECUTE SHORT'; recEl.className='rec-signal avoid' }
-  else { recEl.textContent='CHASING (STAND ASIDE)'; recEl.className='rec-signal hold' }
-
-  const price = currentMarket.price
-  // Derive a dynamic tick/pip variation using a 0.5% shift to maintain structural metrics
-  const rangeVar = price * 0.005 
-  
-  document.getElementById('lv-entry').textContent = fmt(currentMarket.pocZone)
-  // Stop losses calculated using structural room beneath the entries
-  document.getElementById('lv-sl').textContent = fmt(isUp ? currentMarket.pocZone - rangeVar : currentMarket.pocZone + rangeVar)
-  // Automated 2:1 target extraction
-  document.getElementById('lv-tp').textContent = fmt(isUp ? currentMarket.pocZone + (rangeVar * 2) : currentMarket.pocZone - (rangeVar * 2))
-
-  const sig = recEl.textContent
-  document.getElementById('reasoning').innerHTML = isUp
-    ? `<strong>${currentMarket.sym} Structural State:</strong> 4H top-down analysis confirms asset is reacting near a verified high volume Point of Control (POC) level ($${fmt(currentMarket.pocZone)}). Level 2 order book order books indicate passive limit orders are absorbing sells. Execution requires waiting for structural validation before committing contract risk.`
-    : `<strong>${currentMarket.sym} Structural State:</strong> Negative Market Delta verified (${currentMarket.delta}) via automated tape updates. Orders show execution lacks passive bidder support under the current price level. Stand aside to prevent emotional exposure or structural front-running.`;
-}
-
-function updateNews() {
-  const items = currentNewsItems()
-  document.getElementById('news-feed').innerHTML = items.map(n => `
-    <div class="news-item">
-      <div class="news-headline">${n.h}</div>
-      <div class="news-meta">
-        <span class="badge ${n.s==='bull'?'bull':n.s==='bear'?'bear':'neut'}">${n.s==='bull'?'Order Intent: Buy':n.s==='bear'?'Order Intent: Sell':'Neutral'}</span>
-        <span class="news-age">${n.a || ''}</span>
-      </div>
-    </div>`).join('')
-}
-
-function updateCal() {
-  document.getElementById('cal-feed').innerHTML = DISCIPLINE_DATA.map(c => `
-    <div class="cal-item">
-      <div class="cal-date" style="color:var(--danger);font-weight:700">${c.d}</div>
-      <div class="cal-event" style="font-size:12px">${c.e}</div>
-      <span class="badge high-imp">MANDATORY</span>
-    </div>`).join('')
-}
-
-function askAI(type) {
-  const sym = currentMarket.sym
-  const p = {
-    full:`Perform a systematic audit matching current Order Book intent versus Tape reality on ${sym}.`,
-    news:`Extract key auction value zones and Point of Control (POC) historical support lines for ${sym}.`,
-    macro:`Review the 4H higher-level time frame structural retest parameters on ${sym}.`
-  }
-  alert('Execute Prompt:\n\n"' + p[type] + '"')
-}
-
-async function fetchLivePrices() {
-  if (!TWELVE_DATA_KEY || TWELVE_DATA_KEY === 'YOUR_TWELVE_DATA_KEY_HERE') {
-    setStatus('Tape Engine Online (Mocking Level 2 and Volume Data Matrices)', false)
-    return
-  }
-  const symbols = MARKETS.map(m => m.tdSym).join(',')
-  try {
-    setStatus('Connecting to real-time execution book feeds...', false)
-    const res = await fetch(`https://api.twelvedata.com/quote?symbol=${encodeURIComponent(symbols)}&apikey=${TWELVE_DATA_KEY}`)
-    const data = await res.json()
-    const lookup = data.symbol ? {[data.symbol]: data} : data
-
-    let updatedAny = false
-    MARKETS.forEach(m => {
-      const d = lookup[m.tdSym]
-      if (d && d.close && !d.code) {
-        m.price = parseFloat(d.close)
-        updatedAny = true
-      }
-    })
-
-    if (updatedAny) {
-      lastFetchFailed = false
-      liveDataOk = true
-      setStatus('Tape Updates Live · synchronized ' + new Date().toLocaleTimeString(), false)
-      updatePriceHero()
-      updateAnalysis()
-    }
-  } catch (e) {
-    lastFetchFailed = true
-    setStatus('Level 2 stream down — showing internal local session structures', true)
-  }
-}
-
-function refresh(manual) {
-  const btn = document.getElementById('refresh-btn')
-  btn.classList.add('spinning')
-  updatePriceHero()
-  updateAnalysis()
-  updateNews()
-  updateCal()
-  fetchLivePrices()
-  setTimeout(() => btn.classList.remove('spinning'), 800)
-}
-
-function updateClock() {
-  document.getElementById('clock').textContent = new Date().toUTCString().slice(17,25) + ' UTC'
-}
-
-buildMarketBar()
-buildTFBar()
-refresh(false)
-setInterval(updateClock, 1000)
-updateClock()
-
-setInterval(fetchLivePrices, 300000)
-</script>
-</body>
-</html>
+  const el = document.getElementById('status-line');
+  el.textContent = msg;
+  el.
