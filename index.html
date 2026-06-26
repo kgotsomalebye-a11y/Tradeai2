@@ -208,6 +208,7 @@
             font-size: 12px;
             padding: 6px 0;
             border-bottom: 1px solid rgba(255,255,255,0.02);
+            transition: background 0.3s ease;
         }
 
         .footprint-row.poc-node {
@@ -222,7 +223,6 @@
 
         .poc-node .node-price { color: var(--text-main); }
 
-        /* Restored Modules Styles */
         .confirmation-panel {
             background: var(--bg-card);
             border: 1px solid var(--border-color);
@@ -263,7 +263,7 @@
             background: var(--primary);
             height: 100%;
             width: 0%;
-            transition: width 0.5s ease;
+            transition: width 0.4s ease;
         }
 
         .targets-container {
@@ -382,7 +382,7 @@
             <div class="sub-logo">FLOW</div>
         </div>
         <div class="status-feed" id="status-line">Analyzing Tape and Footprint Volumes...</div>
-        <div class="status-feed" id="clock-display">17:43:39 UTC</div>
+        <div class="status-feed" id="clock-display">00:00:00 UTC</div>
     </header>
 
     <div class="asset-selector" id="ticker-tabs">
@@ -494,59 +494,239 @@
 
         const marketRegistry = {
             "XAU/USD": {
-                ticker: "XAU/USD",
-                name: "Gold Spot",
-                price: "$2335.50",
-                change: "▲ 10.5000 (+0.45%) Active Auction",
-                poc: "$2329.51",
-                keyLevel: "$2317.14",
-                bookImbalance: "68% Bid",
-                sessionDelta: "+1150 Contracts",
-                intentRatio: "74%",
-                bars: { l2: "70%", ts: "65%", delta: "80%", struct: "82%" },
+                ticker: "XAU/USD", name: "Gold Spot", decimals: 2, prefix: "$",
+                rawPrice: 2335.50, changePct: 0.45, isBullish: true,
+                pocPrice: 2329.95, keyLevel: "$2317.14", bookImbalance: 68, sessionDelta: 1150,
+                bars: { l2: 70, ts: 65, delta: 80, struct: 82 },
                 targets: { entry: "$2325.00", sl: "$2311.00", tp: "$2353.00" },
-                tape: [
-                    "Institutional block orders step in protecting Gold near structural value fields",
-                    "Aggressive buy sweeps clearing outer premium offer rings"
-                ],
+                tape: ["Institutional block orders protecting Gold near value fields", "Aggressive buy sweeps clearing outer premium offer rings"],
+                priceSteps: [9.55, 4.77, 0, -4.78, -9.55], 
                 candles: [
-                    {
-                        title: "-2 Candles", delta: "+805", isPos: true,
-                        rows: [
-                            { bid: "738", price: "2339.50", ask: "1478", isPoc: false },
-                            { bid: "694", price: "2334.72", ask: "1425", isPoc: false },
-                            { bid: "1367", price: "2329.95", ask: "3295", isPoc: true },
-                            { bid: "607", price: "2325.17", ask: "1320", isPoc: false },
-                            { bid: "564", price: "2320.40", ask: "1268", isPoc: false }
-                        ]
-                    },
-                    {
-                        title: "-1 Candle", delta: "-460", isPos: false,
-                        rows: [
-                            { bid: "944", price: "2339.50", ask: "384", isPoc: false },
-                            { bid: "869", price: "2334.72", ask: "372", isPoc: false },
-                            { bid: "794", price: "2329.95", ask: "360", isPoc: false },
-                            { bid: "1510", price: "2325.17", ask: "835", isPoc: true },
-                            { bid: "644", price: "2320.40", ask: "336", isPoc: false }
-                        ]
-                    },
-                    {
-                        title: "Current", delta: "+1150", isPos: true,
-                        rows: [
-                            { bid: "979", price: "2339.50", ask: "1995", isPoc: false },
-                            { bid: "935", price: "2334.72", ask: "1943", isPoc: false },
-                            { bid: "1873", price: "2329.95", ask: "4536", isPoc: true },
-                            { bid: "849", price: "2325.17", ask: "1838", isPoc: false },
-                            { bid: "805", price: "2320.40", ask: "1785", isPoc: false }
-                        ]
-                    }
+                    { title: "-2 Candles", delta: "+805", isPos: true, rows: [[738, 1478], [694, 1425], [1367, 3295], [607, 1320], [564, 1268]] },
+                    { title: "-1 Candle", delta: "-460", isPos: false, rows: [[944, 384], [869, 372], [794, 360], [1510, 835], [644, 336]] },
+                    { title: "Current", delta: "+1150", isPos: true, rows: [[979, 1995], [935, 1943], [1873, 4536], [849, 1838], [805, 1785]] }
                 ]
             },
             "SPX500": {
-                ticker: "SPX500",
-                name: "S&P 500 Index",
-                price: "$5462.25",
-                change: "▲ 34.5000 (+0.63%) Open Market",
-                poc: "$5448.50",
-                keyLevel: "$5420.00",
-                bookImbalance: "59
+                ticker: "SPX500", name: "S&P 500 Index", decimals: 2, prefix: "$",
+                rawPrice: 5462.25, changePct: 0.63, isBullish: true,
+                pocPrice: 5448.50, keyLevel: "$5420.00", bookImbalance: 59, sessionDelta: 4820,
+                bars: { l2: 60, ts: 58, delta: 72, struct: 74 },
+                targets: { entry: "$5440.00", sl: "$5415.00", tp: "$5490.00" },
+                tape: ["Index baseline defended systematically at cash open structures", "Program institutional flow triggering size block buys"],
+                priceSteps: [16.50, 8.25, 0, -8.25, -16.50],
+                candles: [
+                    { title: "-2 Candles", delta: "+2450", isPos: true, rows: [[4105, 5920], [3890, 4110], [8220, 9845], [3105, 3290], [2740, 2910]] },
+                    { title: "-1 Candle", delta: "+1140", isPos: true, rows: [[4600, 4920], [6840, 7405], [5110, 4930], [3490, 3610], [2150, 2200]] },
+                    { title: "Current", delta: "+4820", isPos: true, rows: [[5930, 7840], [4820, 5210], [9450, 14890], [4120, 4330], [3190, 3400]] }
+                ]
+            },
+            "NAS100": {
+                ticker: "NAS100", name: "NASDAQ 100", decimals: 2, prefix: "$",
+                rawPrice: 19725.75, changePct: -0.21, isBullish: false,
+                pocPrice: 19780.25, keyLevel: "$19610.50", bookImbalance: 44, sessionDelta: -1840,
+                bars: { l2: 40, ts: 42, delta: 35, struct: 36 },
+                targets: { entry: "$19750.00", sl: "$19820.00", tp: "$19610.00" },
+                tape: ["Large tech equity blocks clearing resting buy targets", "Aggressive sell orders testing low liquidity limits"],
+                priceSteps: [49.75, 24.87, 0, -24.88, -49.75],
+                candles: [
+                    { title: "-2 Candles", delta: "+920", isPos: true, rows: [[2410, 2640], [3950, 4810], [1980, 1850], [1420, 1390], [980, 1120]] },
+                    { title: "-1 Candle", delta: "-2940", isPos: false, rows: [[4110, 2190], [5940, 3410], [3650, 2110], [2400, 1550], [1650, 980]] },
+                    { title: "Current", delta: "-1840", isPos: false, rows: [[2980, 1490], [6120, 4150], [4850, 3620], [3110, 2100], [1890, 1420]] }
+                ]
+            },
+            "WTI/USD": {
+                ticker: "WTI/USD", name: "Crude Oil Light", decimals: 2, prefix: "$",
+                rawPrice: 81.45, changePct: 0.93, isBullish: true,
+                pocPrice: 80.90, keyLevel: "$79.20", bookImbalance: 71, sessionDelta: 620,
+                bars: { l2: 75, ts: 72, delta: 80, struct: 85 },
+                targets: { entry: "$80.50", sl: "$79.60", tp: "$82.30" },
+                tape: ["Spot pipeline options liquidity absorption triggered", "Bid thickness rising above immediate structural floors"],
+                priceSteps: [1.00, 0.50, 0, -0.50, -1.00],
+                candles: [
+                    { title: "-2 Candles", delta: "+310", isPos: true, rows: [[310, 490], [280, 340], [780, 910], [210, 190], [140, 180]] },
+                    { title: "-1 Candle", delta: "-190", isPos: false, rows: [[420, 210], [560, 390], [310, 240], [190, 110], [110, 80]] },
+                    { title: "Current", delta: "+620", isPos: true, rows: [[490, 680], [390, 510], [880, 1420], [310, 440], [210, 320]] }
+                ]
+            }
+        };
+
+        function switchAsset(assetKey) {
+            if (!marketRegistry[assetKey]) return;
+            activeAssetKey = assetKey;
+
+            document.querySelectorAll('#ticker-tabs .btn').forEach(btn => {
+                if (btn.textContent.trim() === marketRegistry[assetKey].ticker || 
+                    (assetKey === 'SPX500' && btn.textContent.includes('S&P')) ||
+                    (assetKey === 'NAS100' && btn.textContent.includes('NASDAQ'))) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+
+            updateUI();
+        }
+
+        function updateUI() {
+            const data = marketRegistry[activeAssetKey];
+            
+            // Hero Block Layout Update
+            document.getElementById('asset-label').textContent = `${data.ticker} · ${data.name}`;
+            document.getElementById('main-price').textContent = `${data.prefix}${data.rawPrice.toFixed(data.decimals)}`;
+            
+            const sign = data.isBullish ? "▲" : "▼";
+            const changeText = `${sign} ${(data.rawPrice * (data.changePct / 100)).toFixed(4)} (${data.isBullish ? '+' : ''}${data.changePct.toFixed(2)}%) ${data.isBullish ? 'Active Auction' : 'Absorption Phase'}`;
+            const changeEl = document.getElementById('main-change');
+            changeEl.textContent = changeText;
+            changeEl.style.color = data.isBullish ? 'var(--accent-green)' : 'var(--accent-red)';
+
+            document.getElementById('meta-poc').textContent = `${data.prefix}${data.pocPrice.toFixed(data.decimals)}`;
+            document.getElementById('meta-key').textContent = data.keyLevel;
+            document.getElementById('meta-book').textContent = `${data.bookImbalance}% ${data.isBullish ? 'Bid' : 'Ask'}`;
+            document.getElementById('meta-delta').textContent = `${data.sessionDelta > 0 ? '+' : ''}${data.sessionDelta} Contracts`;
+
+            // Order Flow Intent Matrix Configuration
+            const totalIntent = Math.round((data.bars.l2 + data.bars.ts + data.bars.delta + data.bars.struct) / 4);
+            const intentRatioEl = document.getElementById('intent-ratio');
+            intentRatioEl.textContent = `${totalIntent}%`;
+            intentRatioEl.style.color = data.isBullish ? 'var(--primary)' : 'var(--accent-red)';
+            
+            document.getElementById('bar-l2').style.width = `${data.bars.l2}%`;
+            document.getElementById('bar-ts').style.width = `${data.bars.ts}%`;
+            document.getElementById('bar-delta').style.width = `${data.bars.delta}%`;
+            document.getElementById('bar-struct').style.width = `${data.bars.struct}%`;
+
+            document.getElementById('target-entry').textContent = data.targets.entry;
+            document.getElementById('target-sl').textContent = data.targets.sl;
+            document.getElementById('target-tp').textContent = data.targets.tp;
+
+            // Render Footprint Chart Components
+            renderFootprintChart(data);
+
+            // Print Live Tape Feed Data Strings
+            const tapeBox = document.getElementById('tape-content');
+            tapeBox.innerHTML = '';
+            data.tape.forEach((line, index) => {
+                let borderStyle = (index === data.tape.length - 1) ? 'style="border: none;"' : '';
+                let badgeText = data.isBullish ? 'Aggressive Buying' : 'Aggressive Selling';
+                let badgeColor = data.isBullish ? '' : 'background: rgba(255, 74, 90, 0.1); color: var(--accent-red);';
+                tapeBox.innerHTML += `
+                    <div class="tape-row" ${borderStyle}>
+                        <div>${line}</div>
+                        <div class="badge-buy" style="${badgeColor}">${badgeText}</div>
+                    </div>
+                `;
+            });
+        }
+
+        function renderFootprintChart(data) {
+            const wrapper = document.getElementById('matrix-grid-box');
+            wrapper.innerHTML = '';
+
+            data.candles.forEach(candle => {
+                let block = document.createElement('div');
+                block.className = 'candle-block';
+
+                let isNetPos = parseInt(candle.delta) >= 0;
+                let dClass = isNetPos ? 'delta-pos' : 'delta-neg';
+                let arrowSign = isNetPos ? '▲ ' : '▼ ';
+
+                block.innerHTML = `
+                    <div class="candle-header">
+                        <strong>${candle.title}</strong>
+                        <span class="${dClass}">${arrowSign}${Math.abs(parseInt(candle.delta))}</span>
+                    </div>
+                `;
+
+                // Compute runtime maximum volume to accurately pinpoint POC nodes
+                let maxCombinedVol = -1;
+                let pocIndex = 0;
+                candle.rows.forEach((row, idx) => {
+                    let totalNodeVol = row[0] + row[1];
+                    if (totalNodeVol > maxCombinedVol) {
+                        maxCombinedVol = totalNodeVol;
+                        pocIndex = idx;
+                    }
+                });
+
+                candle.rows.forEach((row, idx) => {
+                    let calculatedPrice = data.pocPrice + data.priceSteps[idx];
+                    let isPocNode = (idx === pocIndex);
+                    let pocClass = isPocNode ? 'footprint-row poc-node' : 'footprint-row';
+
+                    block.innerHTML += `
+                        <div class="${pocClass}">
+                            <div class="bid-vol">${row[0]}</div>
+                            <div class="node-price">${calculatedPrice.toFixed(data.decimals)}</div>
+                            <div class="ask-vol">${row[1]}</div>
+                        </div>
+                    `;
+                });
+
+                wrapper.appendChild(block);
+            });
+        }
+
+        // Live Market Tick Processing Pipeline Simulation
+        function simulateLiveTicks() {
+            Object.keys(marketRegistry).forEach(key => {
+                const data = marketRegistry[key];
+                
+                // Tick delta computations 
+                const tickDirection = Math.random() > (data.isBullish ? 0.45 : 0.55) ? 1 : -1;
+                const priceTick = (Math.random() * (data.rawPrice * 0.0003)) * tickDirection;
+                
+                data.rawPrice += priceTick;
+                
+                // Keep raw volume tracking and imbalances fluid
+                const deltaChange = Math.floor(Math.random() * 45) * tickDirection;
+                data.sessionDelta += deltaChange;
+                
+                if (Math.random() > 0.7) {
+                    data.bookImbalance = Math.min(85, Math.max(25, data.bookImbalance + (Math.random() > 0.5 ? 1 : -1)));
+                }
+
+                // Smooth internal order intent changes
+                ['l2', 'ts', 'delta', 'struct'].forEach(barKey => {
+                    if (Math.random() > 0.6) {
+                        data.bars[barKey] = Math.min(95, Math.max(15, data.bars[barKey] + (Math.random() > 0.5 ? 2 : -2)));
+                    }
+                });
+
+                // Stream current footprints row metrics live
+                const targetRow = data.candles[2].rows[Math.floor(Math.random() * 5)];
+                targetRow[0] += Math.floor(Math.random() * 12);
+                targetRow[1] += Math.floor(Math.random() * 12);
+
+                // Live dynamic aggregate recalculation
+                let calculatedCurrentDelta = 0;
+                data.candles[2].rows.forEach(row => {
+                    calculatedCurrentDelta += (row[1] - row[0]);
+                });
+                data.candles[2].delta = `${calculatedCurrentDelta > 0 ? '+' : ''}${calculatedCurrentDelta}`;
+                data.candles[2].isPos = calculatedCurrentDelta >= 0;
+            });
+
+            updateUI();
+        }
+
+        function updateClock() {
+            const now = new Date();
+            let h = String(now.getUTCHours()).padStart(2, '0');
+            let m = String(now.getUTCMinutes()).padStart(2, '0');
+            let s = String(now.getUTCSeconds()).padStart(2, '0');
+            document.getElementById('clock-display').textContent = `${h}:${m}:${s} UTC`;
+        }
+
+        function startDashboard() {
+            switchAsset("XAU/USD");
+            updateClock();
+            setInterval(updateClock, 1000);
+            setInterval(simulateLiveTicks, 1000); // 1-Second Global Data Refresh Engine Loop
+        }
+
+        window.addEventListener('DOMContentLoaded', startDashboard);
+    </script>
+</body>
+</html>
