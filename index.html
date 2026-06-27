@@ -1,86 +1,25 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>TradeAI Pro - Live Terminal</title>
-    <style>
-        :root { --bg:#070a13; --bg2:#0f1526; --text:#f0f4ff; --border:rgba(255,255,255,0.06); --success:#10b981; --danger:#f43f5e; }
-        body { background: var(--bg); color: var(--text); font-family: 'Space Mono', monospace; padding: 20px; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px; }
-        .card { background: var(--bg2); border: 1px solid var(--border); padding: 15px; border-radius: 12px; }
-        .mkt-btn { padding: 8px 12px; border: 1px solid var(--border); background: var(--bg2); color: #fff; cursor: pointer; border-radius: 6px; margin: 5px; }
-        .mkt-btn.active { border-color: #00ffcc; color: #00ffcc; }
-        .row { display: grid; grid-template-columns: 1fr 1fr 1fr; font-size: 11px; padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.03); }
-    </style>
-</head>
-<body>
-
-<div class="card">
-    <div id="market-selector"></div>
-</div>
-
-<div class="grid">
-    <div class="card">
-        <div id="price-display" style="font-size:32px; font-weight:bold;">Select a Market...</div>
-    </div>
-</div>
-
-<div class="grid">
-    <div class="card">
-        <div style="font-size:11px; color:#7c8ba1;">TIME & SALES</div>
-        <div id="tape-stream"></div>
-    </div>
-    <div class="card">
-        <div style="font-size:11px; color:#7c8ba1;">ORDER BOOK (L2)</div>
-        <div id="order-book"></div>
-    </div>
-</div>
-
 <script>
     const API_KEY = 'd8vt9a1r01qp5hrlp1dgd8vt9a1r01qp5hrlp1e0';
     const socket = new WebSocket(`wss://ws.finnhub.io?token=${API_KEY}`);
-    
-    const MARKETS = [
-        {sym:"XAU/USD", apiSym:"OANDA:XAU_USD"},
-        {sym:"WTI/USD", apiSym:"OANDA:WTICO_USD"},
-        {sym:"SPX500", apiSym:"INDEX:SPX"},
-        {sym:"NAS100", apiSym:"INDEX:NDX"},
-        {sym:"USD/ZAR", apiSym:"FX:USDZAR"},
-        {sym:"GBP/JPY", apiSym:"FX:GBPJPY"}
-    ];
 
-    let currentSymbol = "";
-
-    // UI Initializer
-    function init() {
-        const bar = document.getElementById('market-selector');
-        bar.innerHTML = MARKETS.map(m => 
-            `<button class="mkt-btn" onclick="switchMarket('${m.apiSym}')">${m.sym}</button>`
-        ).join('');
-    }
-
-    function switchMarket(apiSym) {
-        if(currentSymbol) socket.send(JSON.stringify({'type':'unsubscribe', 'symbol': currentSymbol}));
-        socket.send(JSON.stringify({'type':'subscribe', 'symbol': apiSym}));
-        currentSymbol = apiSym;
-        document.getElementById('tape-stream').innerHTML = '';
-        document.getElementById('price-display').textContent = "Connecting to " + apiSym + "...";
-    }
+    socket.onopen = () => {
+        console.log("WebSocket Connected!");
+        // Let's force-test with BINANCE:BTCUSDT (The only one guaranteed on free tier)
+        socket.send(JSON.stringify({'type':'subscribe', 'symbol': 'BINANCE:BTCUSDT'}));
+    };
 
     socket.onmessage = (event) => {
         const msg = JSON.parse(event.data);
         if(msg.type === 'trade') {
-            const t = msg.data[0];
-            document.getElementById('price-display').textContent = '$' + t.p.toFixed(4);
-            const tape = document.getElementById('tape-stream');
-            tape.insertAdjacentHTML('afterbegin', `<div class="row"><span>${new Date().toLocaleTimeString()}</span><span>${t.p.toFixed(4)}</span><span>${t.v.toFixed(4)}</span></div>`);
-            if(tape.children.length > 10) tape.lastElementChild.remove();
+            console.log("Data received:", msg); // Check your F12 Console!
+            document.getElementById('price-display').textContent = '$' + msg.data[0].p.toFixed(2);
+        } else if (msg.type === 'error') {
+            document.getElementById('price-display').textContent = "API Error: " + msg.msg;
         }
     };
 
-    socket.onerror = (err) => console.error("WebSocket Error:", err);
-    
-    init();
+    socket.onerror = (err) => {
+        document.getElementById('price-display').textContent = "Connection Failed.";
+        console.error("Socket Error:", err);
+    };
 </script>
-</body>
-</html>
