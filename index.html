@@ -179,6 +179,11 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--s
     </div>
   </div>
 
+  <div class="info-card" style="margin-bottom: 16px;">
+      <div class="card-title">Time & Sales Confirmation <span class="card-title-tag">Real-time Fills</span></div>
+      <div id="tape-stream" style="font-family: var(--mono); font-size: 11px; height: 150px; overflow-y: auto; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 8px;"></div>
+  </div>
+
   <div class="action-row">
     <button class="action-btn" onclick="checkTape('flow')">📊 Print Footprint Chart</button>
     <button class="action-btn" onclick="checkTape('levels')">🎯 Map Break/Retest</button>
@@ -204,6 +209,7 @@ const MARKETS = [
   {sym:"USD/CNY", apiType:"forex", apiSym:"CNY", name:"US Dollar / Yuan", price:7.25, open:7.24, high:7.27, low:7.23, chg:0.01, chgPct:0.14},
 ];
 
+let tapeLogs = [];
 const TIMEFRAMES = ["5m","15m","30m","1H","4H"];
 const TECH_BY_TF = {
   "5m":  {bookScore:35, tapeScore:38, delta: -42,  imbalance: "53% Ask", alignmentScore: 30},
@@ -224,6 +230,23 @@ const NEWS_FALLBACK = {
 
 let currentMarket = MARKETS[0];
 let currentTF = "4H"; 
+
+function updateTapeStream(isSpoof) {
+    const streamEl = document.getElementById('tape-stream');
+    if(!streamEl) return;
+    const timestamp = new Date().toLocaleTimeString();
+    const size = Math.floor(Math.random() * 50) + 10;
+    const price = currentMarket.price.toFixed(2);
+    const side = Math.random() > 0.5 ? 'BUY' : 'SELL';
+    
+    const entry = isSpoof 
+        ? `<div style="color:var(--danger)">[${timestamp}] SPOOF DETECTED: Large ${side} order removed before fill @ ${price}</div>`
+        : `<div style="color:var(--success)">[${timestamp}] FILL: ${size} lots ${side} @ ${price}</div>`;
+
+    tapeLogs.unshift(entry);
+    if(tapeLogs.length > 15) tapeLogs.pop();
+    streamEl.innerHTML = tapeLogs.join('');
+}
 
 async function pullDirectTickerData() {
   const statusLine = document.getElementById('status-line');
@@ -424,6 +447,12 @@ function startDashboard() {
   updateClock();
   updateNews();
   pullDirectTickerData();
+  
+  // Start the Tape Stream
+  setInterval(() => {
+    const isSpoof = Math.random() > 0.85; 
+    updateTapeStream(isSpoof);
+  }, 3000);
 }
 
 if (document.readyState === 'loading') {
