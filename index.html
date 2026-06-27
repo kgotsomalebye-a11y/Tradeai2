@@ -1,55 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>TradeAI Pro - Live Market Data</title>
+    <style>
+        /* Keep your existing :root and CSS styles as they are */
+        .tape-row { display: grid; grid-template-columns: 1fr 1fr 1fr; font-size: 10px; font-family: 'Space Mono'; border-bottom: 1px solid rgba(255,255,255,0.05); padding: 4px; }
+        .bid { color: #10b981; } .ask { color: #f43f5e; }
+    </style>
+</head>
+<body>
+    <div class="card-grid">
+        <div class="info-card">
+            <div class="card-title">Time & Sales (Live) <span id="conn-status">Connecting...</span></div>
+            <div id="tape-stream" style="height:300px; overflow-y:auto;"></div>
+        </div>
+        <div class="info-card">
+            <div class="card-title">Live Order Book (L2)</div>
+            <div id="order-book" style="height:300px;"></div>
+        </div>
+    </div>
+
 <script>
-const FINNHUB_KEY = 'd8vbt19r01quam15pm0gd8vbt19r01quam15pm10'; // ENTER YOUR KEY HERE
-const socket = new WebSocket(`wss://ws.finnhub.io?token=${FINNHUB_KEY}`);
+    const API_KEY = 'd8vbt19r01quam15pm0gd8vbt19r01quam15pm10'; 
+    const socket = new WebSocket(`wss://ws.finnhub.io?token=${API_KEY}`);
 
-// DOM Elements
-const tapeContainer = document.getElementById('tape-stream');
-const orderBookContainer = document.getElementById('order-book');
+    // UI ELEMENTS
+    const tape = document.getElementById('tape-stream');
+    const book = document.getElementById('order-book');
+    const status = document.getElementById('conn-status');
 
-socket.addEventListener('open', () => {
-    document.getElementById('status-line').textContent = "Live Feed Connected.";
-    // Subscribe to both Trade (Tape) and L2 Book (Order Book)
-    socket.send(JSON.stringify({'type':'subscribe', 'symbol': 'BINANCE:BTCUSDT'}));
-    socket.send(JSON.stringify({'type':'subscribe', 'symbol': 'BINANCE:BTCUSDT'}));
-});
+    socket.onopen = () => {
+        status.textContent = "Live";
+        // Subscribe to BTC/USDT Trade and L2 Book
+        socket.send(JSON.stringify({'type':'subscribe', 'symbol': 'BINANCE:BTCUSDT'}));
+        socket.send(JSON.stringify({'type':'subscribe', 'symbol': 'BINANCE:BTCUSDT'})); 
+    };
 
-socket.addEventListener('message', (event) => {
-    const data = JSON.parse(event.data);
-    
-    if (data.type === 'trade') {
-        updateTape(data.data[0]);
-        updatePriceHero(data.data[0].p);
-    } else if (data.type === 'l2snapshot') {
-        renderOrderBook(data.data);
-    }
-});
-
-function updateTape(trade) {
-    if(!tapeContainer) return;
-    const time = new Date(trade.t).toLocaleTimeString();
-    const row = `<div style="display:flex; justify-content:space-between; font-size:10px; padding:2px; border-bottom:1px solid #172037;">
-                    <span>${time}</span>
-                    <span style="color:${trade.p > 0 ? 'var(--success)' : 'var(--danger)'}">${trade.p.toFixed(2)}</span>
-                    <span>${trade.v.toFixed(4)}</span>
-                 </div>`;
-    tapeContainer.insertAdjacentHTML('afterbegin', row);
-    if(tapeContainer.children.length > 15) tapeContainer.lastElementChild.remove();
-}
-
-function renderOrderBook(book) {
-    if(!orderBookContainer) return;
-    let html = `<div style="display:grid; grid-template-columns: 1fr 1fr 1fr; font-size:10px; gap:4px; text-align:center;">
-                    <div style="color:var(--muted)">BID</div><div style="color:var(--muted)">PRICE</div><div style="color:var(--muted)">ASK</div>`;
-    for(let i = 0; i < 10; i++) {
-        html += `<div style="color:var(--success)">${book.bids[i]?.s || '-'}</div>
-                 <div style="font-weight:bold; color:var(--text)">${book.bids[i]?.p || '-'}</div>
-                 <div style="color:var(--danger)">${book.asks[i]?.s || '-'}</div>`;
-    }
-    orderBookContainer.innerHTML = html + '</div>';
-}
-
-function updatePriceHero(price) {
-    const valEl = document.getElementById('price-value');
-    if(valEl) valEl.textContent = '$' + price.toLocaleString();
-}
+    socket.onmessage = (event) => {
+        const res = JSON.parse(event.data);
+        if (res.type === 'trade') {
+            const t = res.data[0];
+            tape.insertAdjacentHTML('afterbegin', `
+                <div class="tape-row">
+                    <span>${new Date(t.t).toLocaleTimeString()}</span>
+                    <span>${t.p.toFixed(2)}</span>
+                    <span style="color:${t.p > 0 ? '#10b981' : '#f43f5e'}">${t.v.toFixed(4)}</span>
+                </div>`);
+            if(tape.children.length > 30) tape.lastElementChild.remove();
+        } 
+        else if (res.type === 'l2snapshot') {
+            const data = res.data;
+            let html = `<div style="display:grid; grid-template-columns: 1fr 1fr 1fr; text-align:center; font-size:10px;">`;
+            for(let i=0; i<8; i++) {
+                html += `<div class="bid">${data.bids[i]?.s || '-'}</div>
+                         <div style="color:#fff">${data.bids[i]?.p || '-'}</div>
+                         <div class="ask">${data.asks[i]?.s || '-'}</div>`;
+            }
+            book.innerHTML = html + '</div>';
+        }
+    };
 </script>
+</body>
+</html>
