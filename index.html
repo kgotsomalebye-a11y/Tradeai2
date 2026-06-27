@@ -2,62 +2,66 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>TradeAI Pro - Live Market Data</title>
+    <title>TradeAI Pro - Live Flow</title>
     <style>
-        /* Keep your existing :root and CSS styles as they are */
-        .tape-row { display: grid; grid-template-columns: 1fr 1fr 1fr; font-size: 10px; font-family: 'Space Mono'; border-bottom: 1px solid rgba(255,255,255,0.05); padding: 4px; }
-        .bid { color: #10b981; } .ask { color: #f43f5e; }
+        :root { --bg:#070a13; --bg2:#0f1526; --text:#f0f4ff; --border:rgba(255,255,255,0.06); --success:#10b981; --danger:#f43f5e; }
+        body { background: var(--bg); color: var(--text); font-family: 'Space Mono', monospace; margin: 0; padding: 20px; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .card { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 15px; }
+        .header { font-size: 11px; color: #7c8ba1; text-transform: uppercase; margin-bottom: 10px; border-bottom: 1px solid var(--border); padding-bottom: 5px; }
+        
+        /* Table Styling */
+        .row { display: grid; grid-template-columns: 1fr 1fr 1fr; font-size: 11px; padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.03); }
+        .bid { color: var(--success); text-align: left; }
+        .price { color: #fff; text-align: center; font-weight: bold; }
+        .ask { color: var(--danger); text-align: right; }
     </style>
 </head>
 <body>
-    <div class="card-grid">
-        <div class="info-card">
-            <div class="card-title">Time & Sales (Live) <span id="conn-status">Connecting...</span></div>
-            <div id="tape-stream" style="height:300px; overflow-y:auto;"></div>
-        </div>
-        <div class="info-card">
-            <div class="card-title">Live Order Book (L2)</div>
-            <div id="order-book" style="height:300px;"></div>
-        </div>
+
+<div class="grid">
+    <div class="card">
+        <div class="header">Time & Sales (Tape)</div>
+        <div id="tape-stream"></div>
     </div>
+    <div class="card">
+        <div class="header">Level 2 Order Book</div>
+        <div id="order-book"></div>
+    </div>
+</div>
 
 <script>
-    const API_KEY = 'd8vbt19r01quam15pm0gd8vbt19r01quam15pm10'; 
-    const socket = new WebSocket(`wss://ws.finnhub.io?token=${API_KEY}`);
-
-    // UI ELEMENTS
-    const tape = document.getElementById('tape-stream');
-    const book = document.getElementById('order-book');
-    const status = document.getElementById('conn-status');
+    const socket = new WebSocket('wss://ws.finnhub.io?token=YOUR_API_KEY_HERE');
 
     socket.onopen = () => {
-        status.textContent = "Live";
-        // Subscribe to BTC/USDT Trade and L2 Book
         socket.send(JSON.stringify({'type':'subscribe', 'symbol': 'BINANCE:BTCUSDT'}));
-        socket.send(JSON.stringify({'type':'subscribe', 'symbol': 'BINANCE:BTCUSDT'})); 
     };
 
     socket.onmessage = (event) => {
-        const res = JSON.parse(event.data);
-        if (res.type === 'trade') {
-            const t = res.data[0];
+        const msg = JSON.parse(event.data);
+        if(msg.type === 'trade') {
+            const t = msg.data[0];
+            const tape = document.getElementById('tape-stream');
             tape.insertAdjacentHTML('afterbegin', `
-                <div class="tape-row">
+                <div class="row">
                     <span>${new Date(t.t).toLocaleTimeString()}</span>
-                    <span>${t.p.toFixed(2)}</span>
-                    <span style="color:${t.p > 0 ? '#10b981' : '#f43f5e'}">${t.v.toFixed(4)}</span>
+                    <span style="color:${t.p > 0 ? 'var(--success)' : 'var(--danger)'}">${t.p.toFixed(2)}</span>
+                    <span>${t.v.toFixed(4)}</span>
                 </div>`);
-            if(tape.children.length > 30) tape.lastElementChild.remove();
-        } 
-        else if (res.type === 'l2snapshot') {
-            const data = res.data;
-            let html = `<div style="display:grid; grid-template-columns: 1fr 1fr 1fr; text-align:center; font-size:10px;">`;
-            for(let i=0; i<8; i++) {
-                html += `<div class="bid">${data.bids[i]?.s || '-'}</div>
-                         <div style="color:#fff">${data.bids[i]?.p || '-'}</div>
-                         <div class="ask">${data.asks[i]?.s || '-'}</div>`;
+            if(tape.children.length > 15) tape.lastElementChild.remove();
+        }
+        else if(msg.type === 'l2snapshot') {
+            const data = msg.data;
+            const book = document.getElementById('order-book');
+            let html = '';
+            for(let i=0; i<10; i++) {
+                html += `<div class="row">
+                            <div class="bid">${data.bids[i]?.s || '-'}</div>
+                            <div class="price">${data.bids[i]?.p || '-'}</div>
+                            <div class="ask">${data.asks[i]?.s || '-'}</div>
+                         </div>`;
             }
-            book.innerHTML = html + '</div>';
+            book.innerHTML = html;
         }
     };
 </script>
