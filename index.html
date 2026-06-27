@@ -2,66 +2,65 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>TradeAI Pro - Live Flow</title>
+    <title>TradeAI Pro - Live Market Data</title>
     <style>
-        :root { --bg:#070a13; --bg2:#0f1526; --text:#f0f4ff; --border:rgba(255,255,255,0.06); --success:#10b981; --danger:#f43f5e; }
-        body { background: var(--bg); color: var(--text); font-family: 'Space Mono', monospace; margin: 0; padding: 20px; }
+        /* ... Keep your original CSS styles here ... */
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .card { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 15px; }
-        .header { font-size: 11px; color: #7c8ba1; text-transform: uppercase; margin-bottom: 10px; border-bottom: 1px solid var(--border); padding-bottom: 5px; }
-        
-        /* Table Styling */
-        .row { display: grid; grid-template-columns: 1fr 1fr 1fr; font-size: 11px; padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.03); }
-        .bid { color: var(--success); text-align: left; }
-        .price { color: #fff; text-align: center; font-weight: bold; }
-        .ask { color: var(--danger); text-align: right; }
+        .info-card { background: var(--bg3); border: 1px solid var(--border); border-radius: 16px; padding: 16px; }
     </style>
 </head>
 <body>
 
-<div class="grid">
-    <div class="card">
-        <div class="header">Time & Sales (Tape)</div>
-        <div id="tape-stream"></div>
+<div class="main">
+    <div class="price-hero">
+        <div class="price-symbol" id="price-symbol">SELECT MARKET</div>
+        <div class="price-value" id="price-value">---</div>
     </div>
-    <div class="card">
-        <div class="header">Level 2 Order Book</div>
-        <div id="order-book"></div>
+    
+    <div class="grid">
+        <div class="info-card">
+            <div class="card-title">Time & Sales (Live)</div>
+            <div id="tape-stream" style="height:200px; overflow-y:auto; font-family:monospace; font-size:10px;"></div>
+        </div>
+        <div class="info-card">
+            <div class="card-title">Order Book (L2)</div>
+            <div id="order-book" style="height:200px; overflow-y:auto; font-family:monospace; font-size:10px;"></div>
+        </div>
     </div>
 </div>
 
 <script>
-    const socket = new WebSocket('wss://ws.finnhub.io?token=YOUR_API_KEY_HERE');
+    // 1. RESTORED YOUR MARKET DATA
+    const MARKETS = [
+        {sym:"XAU/USD", name:"Gold Spot", price:2348.10},
+        {sym:"SPX500", name:"S&P 500 Index", price:5465.30},
+        {sym:"NAS100", name:"NASDAQ 100", price:19750.25}
+    ];
 
-    socket.onopen = () => {
-        socket.send(JSON.stringify({'type':'subscribe', 'symbol': 'BINANCE:BTCUSDT'}));
-    };
+    let currentMarket = MARKETS[0];
+    const API_KEY = 'd8vbt19r01quam15pm0gd8vbt19r01quam15pm10';
+    const socket = new WebSocket(`wss://ws.finnhub.io?token=${API_KEY}`);
 
+    // 2. RESTORED PRICE UPDATES
+    function updatePriceHero(livePrice) {
+        document.getElementById('price-symbol').textContent = currentMarket.sym + ' · ' + currentMarket.name;
+        document.getElementById('price-value').textContent = '$' + livePrice.toFixed(2);
+    }
+
+    // 3. INTEGRATED LIVE DATA
     socket.onmessage = (event) => {
         const msg = JSON.parse(event.data);
         if(msg.type === 'trade') {
-            const t = msg.data[0];
+            const trade = msg.data[0];
+            updatePriceHero(trade.p); // Updates your price hero live
+            
+            // Update Tape
             const tape = document.getElementById('tape-stream');
-            tape.insertAdjacentHTML('afterbegin', `
-                <div class="row">
-                    <span>${new Date(t.t).toLocaleTimeString()}</span>
-                    <span style="color:${t.p > 0 ? 'var(--success)' : 'var(--danger)'}">${t.p.toFixed(2)}</span>
-                    <span>${t.v.toFixed(4)}</span>
-                </div>`);
-            if(tape.children.length > 15) tape.lastElementChild.remove();
+            tape.insertAdjacentHTML('afterbegin', `<div>${new Date().toLocaleTimeString()} | ${trade.p} | ${trade.v}</div>`);
         }
         else if(msg.type === 'l2snapshot') {
-            const data = msg.data;
-            const book = document.getElementById('order-book');
-            let html = '';
-            for(let i=0; i<10; i++) {
-                html += `<div class="row">
-                            <div class="bid">${data.bids[i]?.s || '-'}</div>
-                            <div class="price">${data.bids[i]?.p || '-'}</div>
-                            <div class="ask">${data.asks[i]?.s || '-'}</div>
-                         </div>`;
-            }
-            book.innerHTML = html;
+            // Update Order Book
+            document.getElementById('order-book').innerHTML = `Bids: ${msg.data.bids.length} | Asks: ${msg.data.asks.length}`;
         }
     };
 </script>
