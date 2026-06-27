@@ -1,17 +1,16 @@
 <script>
-const FINNHUB_KEY = 'YOUR_FINNHUB_API_KEY'; // REPLACE WITH YOUR KEY
+const FINNHUB_KEY = 'd8vbt19r01quam15pm0gd8vbt19r01quam15pm10'; // ENTER YOUR KEY HERE
 const socket = new WebSocket(`wss://ws.finnhub.io?token=${FINNHUB_KEY}`);
 
-// DOM placeholders for the new tables
-// Ensure these IDs exist in your HTML (or add them where you want the tables)
+// DOM Elements
 const tapeContainer = document.getElementById('tape-stream');
 const orderBookContainer = document.getElementById('order-book');
 
 socket.addEventListener('open', () => {
+    document.getElementById('status-line').textContent = "Live Feed Connected.";
     // Subscribe to both Trade (Tape) and L2 Book (Order Book)
     socket.send(JSON.stringify({'type':'subscribe', 'symbol': 'BINANCE:BTCUSDT'}));
     socket.send(JSON.stringify({'type':'subscribe', 'symbol': 'BINANCE:BTCUSDT'}));
-    document.getElementById('status-line').textContent = "Live Feed Connected: Real-time L2 and Tape Active.";
 });
 
 socket.addEventListener('message', (event) => {
@@ -19,43 +18,38 @@ socket.addEventListener('message', (event) => {
     
     if (data.type === 'trade') {
         updateTape(data.data[0]);
+        updatePriceHero(data.data[0].p);
     } else if (data.type === 'l2snapshot') {
-        updateOrderBook(data.data);
+        renderOrderBook(data.data);
     }
 });
 
-// Updates the Time & Sales Table
 function updateTape(trade) {
     if(!tapeContainer) return;
-    const row = `<div style="display:flex; justify-content:space-between; padding:2px 4px; font-family:var(--mono); font-size:10px;">
-                    <span style="color:var(--muted)">${new Date(trade.t).toLocaleTimeString()}</span>
+    const time = new Date(trade.t).toLocaleTimeString();
+    const row = `<div style="display:flex; justify-content:space-between; font-size:10px; padding:2px; border-bottom:1px solid #172037;">
+                    <span>${time}</span>
                     <span style="color:${trade.p > 0 ? 'var(--success)' : 'var(--danger)'}">${trade.p.toFixed(2)}</span>
-                    <span style="color:var(--text)">${trade.v.toFixed(4)}</span>
+                    <span>${trade.v.toFixed(4)}</span>
                  </div>`;
     tapeContainer.insertAdjacentHTML('afterbegin', row);
     if(tapeContainer.children.length > 15) tapeContainer.lastElementChild.remove();
 }
 
-// Updates the Level 2 Order Book Table
-function updateOrderBook(bookData) {
+function renderOrderBook(book) {
     if(!orderBookContainer) return;
-    let html = `<div style="display:grid; grid-template-columns: 1fr 1fr 1fr; font-family:var(--mono); font-size:10px; gap:2px;">
+    let html = `<div style="display:grid; grid-template-columns: 1fr 1fr 1fr; font-size:10px; gap:4px; text-align:center;">
                     <div style="color:var(--muted)">BID</div><div style="color:var(--muted)">PRICE</div><div style="color:var(--muted)">ASK</div>`;
-    
-    // Render top 10 levels
     for(let i = 0; i < 10; i++) {
-        html += `<div style="color:var(--success)">${bookData.bids[i]?.s || '-'}</div>
-                 <div style="font-weight:bold; color:var(--text)">${bookData.bids[i]?.p || '-'}</div>
-                 <div style="color:var(--danger)">${bookData.asks[i]?.s || '-'}</div>`;
+        html += `<div style="color:var(--success)">${book.bids[i]?.s || '-'}</div>
+                 <div style="font-weight:bold; color:var(--text)">${book.bids[i]?.p || '-'}</div>
+                 <div style="color:var(--danger)">${book.asks[i]?.s || '-'}</div>`;
     }
-    html += '</div>';
-    orderBookContainer.innerHTML = html;
+    orderBookContainer.innerHTML = html + '</div>';
 }
 
-// Keep existing clock and other dashboard logic...
-function updateClock() {
-    const el = document.getElementById('clock');
-    if (el) el.textContent = new Date().toUTCString().slice(17,25) + ' UTC';
+function updatePriceHero(price) {
+    const valEl = document.getElementById('price-value');
+    if(valEl) valEl.textContent = '$' + price.toLocaleString();
 }
-setInterval(updateClock, 1000);
 </script>
