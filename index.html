@@ -1,83 +1,70 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TradeAI Pro - Live Order Flow</title>
-<style>
-  :root{ --bg:#070a13; --bg2:#0f1526; --bg3:#172037; --text:#f0f4ff; --muted:#7c8ba1; --accent:#00ffcc; --danger:#f43f5e; --success:#10b981; }
-  body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; }
-  .price-value { font-family: 'Space Mono', monospace; font-size: 36px; font-weight: 700; }
-  .tape-log { height: 200px; overflow-y: auto; font-family: 'Space Mono', monospace; font-size: 11px; color: var(--muted); }
-  .row { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
-</style>
+    <meta charset="UTF-8">
+    <title>TradeAI Pro - Live Terminal</title>
+    <style>
+        :root { --bg:#070a13; --bg2:#0f1526; --text:#f0f4ff; --border:rgba(255,255,255,0.06); --success:#10b981; --danger:#f43f5e; }
+        body { background: var(--bg); color: var(--text); font-family: 'Space Mono', monospace; padding: 20px; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .card { background: var(--bg2); border: 1px solid var(--border); padding: 15px; border-radius: 12px; }
+        .row { display: grid; grid-template-columns: 1fr 1fr 1fr; font-size: 11px; padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.03); }
+    </style>
 </head>
 <body>
 
-<div class="main">
-  <div class="price-hero">
-    <div class="price-symbol" id="price-symbol">BTC/USDT</div>
-    <div class="price-value" id="price-value">Connecting...</div>
-  </div>
+<div class="grid">
+    <div class="card">
+        <div style="color:#7c8ba1; font-size:12px;">BTC/USDT LIVE PRICE</div>
+        <div id="price-value" style="font-size:32px; font-weight:bold;">Connecting...</div>
+    </div>
+</div>
 
-  <div class="card-grid">
-    <div class="info-card">
-      <div class="card-title">Live Time & Sales</div>
-      <div id="tape-stream" class="tape-log"></div>
+<div class="grid" style="margin-top:20px;">
+    <div class="card">
+        <div style="font-size:11px; color:#7c8ba1; margin-bottom:10px;">TIME & SALES</div>
+        <div id="tape-stream"></div>
     </div>
-    <div class="info-card">
-      <div class="card-title">Live Order Book (L2)</div>
-      <div id="order-book" class="tape-log"></div>
+    <div class="card">
+        <div style="font-size:11px; color:#7c8ba1; margin-bottom:10px;">ORDER BOOK (L2)</div>
+        <div id="order-book"></div>
     </div>
-  </div>
 </div>
 
 <script>
-// 1. CONFIGURATION
-const API_KEY = 'd8vbt19r01quam15pm0gd8vbt19r01quam15pm10';
-const socket = new WebSocket(`wss://ws.finnhub.io?token=${API_KEY}`);
+    const socket = new WebSocket('wss://ws.finnhub.io?token=d8vt9a1r01qp5hrlp1dgd8vt9a1r01qp5hrlp1e0');
 
-// 2. DATA HANDLER
-socket.onopen = () => {
-    console.log("Connected to Live Feed");
-    socket.send(JSON.stringify({'type':'subscribe', 'symbol': 'BINANCE:BTCUSDT'}));
-};
+    socket.onopen = () => {
+        socket.send(JSON.stringify({'type':'subscribe', 'symbol': 'BINANCE:BTCUSDT'}));
+    };
 
-socket.onmessage = (event) => {
-    const msg = JSON.parse(event.data);
-    
-    // Handle Trades (Price Hero & Tape)
-    if(msg.type === 'trade') {
-        const t = msg.data[0];
-        document.getElementById('price-value').textContent = '$' + t.p.toFixed(2);
+    socket.onmessage = (event) => {
+        const msg = JSON.parse(event.data);
         
-        const tape = document.getElementById('tape-stream');
-        tape.insertAdjacentHTML('afterbegin', `
-            <div class="row">
-                <span>${new Date(t.t).toLocaleTimeString()}</span>
-                <span style="color:${t.p > 0 ? 'var(--success)' : 'var(--danger)'}">${t.p.toFixed(2)}</span>
-                <span>${t.v.toFixed(4)}</span>
-            </div>`);
-        if(tape.children.length > 20) tape.lastElementChild.remove();
-    }
-    
-    // Handle L2 Order Book
-    else if(msg.type === 'l2snapshot') {
-        const book = document.getElementById('order-book');
-        book.innerHTML = msg.data.bids.slice(0, 10).map(b => `
-            <div class="row">
-                <span style="color:var(--success)">${b.s}</span>
-                <span>${b.p.toFixed(2)}</span>
-                <span style="color:var(--danger)">${msg.data.asks[0].s}</span>
-            </div>`).join('');
-    }
-};
-
-// 3. Keep your original initialization
-function updateClock() {
-    document.getElementById('clock') ? document.getElementById('clock').textContent = new Date().toUTCString().slice(17,25) + ' UTC' : null;
-}
-setInterval(updateClock, 1000);
+        if(msg.type === 'trade') {
+            const t = msg.data[0];
+            document.getElementById('price-value').textContent = '$' + t.p.toFixed(2);
+            
+            const tape = document.getElementById('tape-stream');
+            tape.insertAdjacentHTML('afterbegin', `
+                <div class="row">
+                    <span>${new Date(t.t).toLocaleTimeString()}</span>
+                    <span style="color:${t.p > 0 ? '#10b981' : '#f43f5e'}">${t.p.toFixed(2)}</span>
+                    <span>${t.v.toFixed(4)}</span>
+                </div>`);
+            if(tape.children.length > 15) tape.lastElementChild.remove();
+        }
+        else if(msg.type === 'l2snapshot') {
+            const data = msg.data;
+            const book = document.getElementById('order-book');
+            book.innerHTML = data.bids.slice(0, 10).map(b => `
+                <div class="row">
+                    <span style="color:#10b981">${b.s}</span>
+                    <span>${b.p.toFixed(2)}</span>
+                    <span style="color:#f43f5e">${data.asks[0]?.s || '-'}</span>
+                </div>`).join('');
+        }
+    };
 </script>
 </body>
 </html>
